@@ -6,6 +6,7 @@ xcuserdata/
 ## Xcode temporary files
 DerivedData/
 build/
+Payload/
 *.xcarchive
 *.ipa
 

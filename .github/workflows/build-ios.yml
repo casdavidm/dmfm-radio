@@ -44,11 +44,12 @@ jobs:
             -destination "generic/platform=iOS" \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=YES \
+            CODE_SIGNING_ALLOWED=NO \
             -derivedDataPath build
 
           mkdir -p Payload
           cp -r build/Build/Products/Release-iphoneos/*.app Payload/
+          codesign --force --deep --sign - Payload/*.app
           zip -r DMFMRadio.ipa Payload
 
       - name: Upload IPA Artifact
