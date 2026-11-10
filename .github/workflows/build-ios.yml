@@ -35,30 +35,25 @@ jobs:
         run: |
           xcodegen generate
 
-      - name: Build Archive (Release)
+      - name: Build App & Package .ipa
         run: |
-          xcodebuild archive \
+          xcodebuild build \
             -project DMFMRadio.xcodeproj \
             -scheme DMFMRadio \
-            -destination "generic/platform=iOS" \
             -configuration Release \
-            -archivePath build/DMFMRadio.xcarchive \
+            -sdk iphoneos \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            -derivedDataPath build
 
-      - name: Package .ipa File
-        run: |
-          mkdir -p build/Payload
-          cp -R build/DMFMRadio.xcarchive/Products/Applications/DMFMRadio.app build/Payload/
-          cd build
-          zip -qr DMFMRadio.ipa Payload
-          echo "DMFMRadio.ipa created successfully."
-          ls -lh DMFMRadio.ipa
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/*.app Payload/
+          zip -r DMFMRadio.ipa Payload
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: DMFMRadio-ipa
-          path: build/DMFMRadio.ipa
+          path: DMFMRadio.ipa
           retention-days: 14
