@@ -1,0 +1,23 @@
+# Xcode
+## User settings
+xcuserdata/
+
+## Xcode temporary files
+DerivedData/
+build/
+*.xcarchive
+*.ipa
+
+## XcodeGen generated project
+# (XcodeGen regenerates this on demand)
+*.xcodeproj
+*.xcworkspace
+
+## Swift Package Manager
+.build/
+.swiftpm/
+
+## macOS
+.DS_Store
+*.swp
+*~
