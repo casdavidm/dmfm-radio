@@ -248,23 +248,24 @@ struct ContentView: View {
                                 .foregroundColor(isSelected ? .white : .white.opacity(0.6))
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
-                                .background(
-                                    Capsule()
-                                        .fill(
-                                            isSelected
-                                                ? AnyShapeStyle(
-                                                    LinearGradient(
-                                                        colors: [
-                                                            Color(red: 0.10, green: 0.75, blue: 1.0),
-                                                            Color(red: 0.85, green: 0.20, blue: 0.95)
-                                                        ],
-                                                        startPoint: .leading,
-                                                        endPoint: .trailing
-                                                    )
-                                                  )
-                                                : AnyShapeStyle(Color.white.opacity(0.06))
-                                        )
-                                )
+                                .background {
+                                    if isSelected {
+                                        Capsule()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [
+                                                        Color(red: 0.10, green: 0.75, blue: 1.0),
+                                                        Color(red: 0.85, green: 0.20, blue: 0.95)
+                                                    ],
+                                                    startPoint: .leading,
+                                                    endPoint: .trailing
+                                                )
+                                            )
+                                    } else {
+                                        Capsule()
+                                            .fill(Color.white.opacity(0.06))
+                                    }
+                                }
                             }
                         }
                     }

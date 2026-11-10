@@ -76,7 +76,7 @@ final class RadioPlayer: ObservableObject {
     private func setupAudioSession() {
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, policy: .longFormAudio, options: [])
+            try session.setCategory(.playback, mode: .default, options: [])
             try session.setActive(true)
         } catch {
             print("Error configurando AVAudioSession: \(error.localizedDescription)")
@@ -301,25 +301,17 @@ final class RadioPlayer: ObservableObject {
         info[MPNowPlayingInfoPropertyIsLiveStream] = true
         info[MPNowPlayingInfoPropertyPlaybackRate] = (state == .playing) ? 1.0 : 0.0
         
-        // Artwork vectorial dinámico para Lock Screen
+        // Artwork vectorial para Lock Screen
         let size = CGSize(width: 300, height: 300)
-        let artwork = MPMediaItemArtwork(boundsSize: size) { [weak self] _ in
+        let artwork = MPMediaItemArtwork(boundsSize: size) { _ in
             let renderer = UIGraphicsImageRenderer(size: size)
             return renderer.image { ctx in
-                let rect = CGRect(origin: .zero, size: size)
-                // Fondo oscuro degradado
-                let colors = [
-                    UIColor(red: 0.08, green: 0.10, blue: 0.18, alpha: 1.0).cgColor,
-                    UIColor(red: 0.02, green: 0.03, blue: 0.08, alpha: 1.0).cgColor
-                ]
-                if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: [0.0, 1.0]) {
-                    ctx.cgContext.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: size.width, y: size.height), options: [])
-                }
+                UIColor(red: 0.08, green: 0.10, blue: 0.18, alpha: 1.0).setFill()
+                ctx.fill(CGRect(origin: .zero, size: size))
                 
-                // Letras "DM/FM"
-                let title = self?.currentStation.name ?? "DM/FM"
+                let title = "DM/FM"
                 let attrs: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.systemFont(ofSize: 32, weight: .bold),
+                    .font: UIFont.systemFont(ofSize: 42, weight: .black),
                     .foregroundColor: UIColor.white
                 ]
                 let str = NSAttributedString(string: title, attributes: attrs)
