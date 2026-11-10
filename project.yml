@@ -21,6 +21,9 @@ targets:
     deploymentTarget: "16.0"
     sources:
       - path: DMFMRadio
+    scheme:
+      archive:
+        config: Release
     settings:
       base:
         PRODUCT_NAME: DMFMRadio
@@ -35,3 +38,11 @@ targets:
         CODE_SIGNING_ALLOWED: NO
         CODE_SIGN_IDENTITY: ""
         ENABLE_PREVIEWS: YES
+
+schemes:
+  DMFMRadio:
+    build:
+      targets:
+        DMFMRadio: all
+    archive:
+      config: Release

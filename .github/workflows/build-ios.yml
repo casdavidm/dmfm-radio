@@ -43,7 +43,6 @@ jobs:
             -destination "generic/platform=iOS" \
             -configuration Release \
             -archivePath build/DMFMRadio.xcarchive \
-            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
