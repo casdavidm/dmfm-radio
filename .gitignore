@@ -1,17 +1,13 @@
 # Xcode
 ## User settings
 xcuserdata/
+*.xcworkspace
 
 ## Xcode temporary files
 DerivedData/
 build/
 *.xcarchive
 *.ipa
-
-## XcodeGen generated project
-# (XcodeGen regenerates this on demand)
-*.xcodeproj
-*.xcworkspace
 
 ## Swift Package Manager
 .build/
@@ -21,4 +17,3 @@ build/
 .DS_Store
 *.swp
 *~
-
