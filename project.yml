@@ -37,7 +37,7 @@ targets:
         CODE_SIGNING_REQUIRED: NO
         CODE_SIGNING_ALLOWED: YES
         CODE_SIGN_IDENTITY: "-"
-        ENABLE_PREVIEWS: YES
+        ENABLE_PREVIEWS: NO
 
 schemes:
   DMFMRadio:

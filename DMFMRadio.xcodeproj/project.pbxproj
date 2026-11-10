@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0B342600DD8DF60EE1A3570A /* DMFMRadioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B10F4F874EA4751C8C79C5 /* DMFMRadioApp.swift */; };
 		25CD6F27E7EC348308D8921A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67A80276F5514C10C2F6DD26 /* Assets.xcassets */; };
 		9CA6A74408ACDA1186FFE7BE /* RadioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC82F302BEF2EFE369C2205E /* RadioPlayer.swift */; };
 		A2CCADC9A8EAB4C7739DC644 /* VisualizerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C6E3DB6DE23D3BBB43816E /* VisualizerView.swift */; };
 		A4EDB442CA21B40ADFFFFEED /* PlayerControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FE6D0109669E1F6DA5A7DA0 /* PlayerControlsView.swift */; };
 		B1ED3EC54AB5D166B0E45CF5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1AB3CAC78B5A1F08EC6C102 /* SettingsView.swift */; };
+		B698FF4A94F80C33BBCE070B /* DMFMApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A8859D4814237528137C48 /* DMFMApp.swift */; };
 		B787905EA4B598E4A8A1E193 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FBD803661530056FA28E60B /* AppConfig.swift */; };
 		BF71F7AADD9F6587D179701D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5B3AEA528963BF0938A82CF /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -25,8 +25,8 @@
 		84C6E3DB6DE23D3BBB43816E /* VisualizerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualizerView.swift; sourceTree = "<group>"; };
 		D1AB3CAC78B5A1F08EC6C102 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D5B3AEA528963BF0938A82CF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D6A8859D4814237528137C48 /* DMFMApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DMFMApp.swift; sourceTree = "<group>"; };
 		ED87F852CDB6FD4C5B847307 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		F7B10F4F874EA4751C8C79C5 /* DMFMRadioApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DMFMRadioApp.swift; sourceTree = "<group>"; };
 		FC82F302BEF2EFE369C2205E /* RadioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioPlayer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -51,7 +51,7 @@
 			isa = PBXGroup;
 			children = (
 				67A80276F5514C10C2F6DD26 /* Assets.xcassets */,
-				F7B10F4F874EA4751C8C79C5 /* DMFMRadioApp.swift */,
+				D6A8859D4814237528137C48 /* DMFMApp.swift */,
 				ED87F852CDB6FD4C5B847307 /* Info.plist */,
 				BCF3B2E765D570B2D1331EA2 /* Config */,
 				4432395FE7D17633D510CA56 /* Services */,
@@ -159,7 +159,7 @@
 			files = (
 				B787905EA4B598E4A8A1E193 /* AppConfig.swift in Sources */,
 				BF71F7AADD9F6587D179701D /* ContentView.swift in Sources */,
-				0B342600DD8DF60EE1A3570A /* DMFMRadioApp.swift in Sources */,
+				B698FF4A94F80C33BBCE070B /* DMFMApp.swift in Sources */,
 				A4EDB442CA21B40ADFFFFEED /* PlayerControlsView.swift in Sources */,
 				9CA6A74408ACDA1186FFE7BE /* RadioPlayer.swift in Sources */,
 				B1ED3EC54AB5D166B0E45CF5 /* SettingsView.swift in Sources */,
@@ -179,7 +179,7 @@
 				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
-				ENABLE_PREVIEWS = YES;
+				ENABLE_PREVIEWS = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DMFMRadio/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -263,7 +263,7 @@
 				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
-				ENABLE_PREVIEWS = YES;
+				ENABLE_PREVIEWS = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DMFMRadio/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;

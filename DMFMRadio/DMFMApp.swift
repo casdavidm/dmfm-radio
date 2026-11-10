@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct DMFMRadioApp: App {
+struct DMFMApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -9,4 +9,3 @@ struct DMFMRadioApp: App {
         }
     }
 }
-

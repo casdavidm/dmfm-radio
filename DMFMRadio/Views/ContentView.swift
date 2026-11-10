@@ -171,7 +171,7 @@ struct ContentView: View {
                 }
                 .onChange(of: player.state.isPlaying) { isPlaying in
                     if isPlaying {
-                        discRotation += 360
+                        discRotation = discRotation + 360
                     }
                 }
                 
@@ -282,13 +282,11 @@ struct ContentView: View {
         }
         .onAppear {
             withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
-                pulseLive.toggle()
+                pulseLive = true
             }
         }
     }
 }
 
-#Preview {
-    ContentView()
-}
+
 
