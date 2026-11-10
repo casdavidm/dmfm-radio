@@ -118,3 +118,4 @@ struct PlayerControlsView: View {
         generator.impactOccurred()
     }
 }
+

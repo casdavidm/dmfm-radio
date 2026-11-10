@@ -177,3 +177,4 @@ struct InfoRow: View {
         }
     }
 }
+

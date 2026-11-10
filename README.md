@@ -91,3 +91,4 @@ Cada vez que realizas un `push` a la rama `main`:
 2. Selecciona la ejecución más reciente del flujo **Build iOS (.ipa)**.
 3. En la sección **Artifacts** al pie de la página, descarga el archivo comprimido **`DMFMRadio-ipa`**.
 4. Puedes instalarlo en tu iPhone o iPad mediante herramientas como AltStore, Sideloadly, TrollStore o firmarlo con tu cuenta de desarrollador Apple.
+
