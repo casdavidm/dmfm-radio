@@ -51,29 +51,11 @@ struct ContentView: View {
     /// Header superior con logotipo tipográfico DM / FM e indicador de estado
     private var headerView: some View {
         HStack {
-            // Logotipo tipográfico DM / FM con acento amarillo #ffc61a
-            HStack(spacing: 5) {
-                Text("DM")
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
-                    .foregroundColor(Color.appTextPrimary)
-                
-                Text("/")
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
-                    .foregroundColor(Color.appAccent)
-                
-                Text("FM")
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
-                    .foregroundColor(Color.appTextPrimary)
-                
-                Text("RADIO")
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundColor(Color.appAccent)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color.appCard)
-                    .cornerRadius(4)
-                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.appBorder, lineWidth: 1))
-            }
+            // Logotipo oficial DM | FM
+            Image("Logo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 28)
             
             Spacer()
             

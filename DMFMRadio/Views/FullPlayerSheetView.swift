@@ -27,13 +27,14 @@ struct FullPlayerSheetView: View {
                     
                     Spacer()
                     
-                    VStack(spacing: 2) {
-                        Text("SINTONIZADOR")
-                            .font(.system(size: 11, weight: .black, design: .monospaced))
-                            .foregroundColor(Color.appAccent)
+                    VStack(spacing: 3) {
+                        Image("Logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 18)
                         
                         Text(player.currentStation.country.isEmpty ? "Transmisión Digital" : player.currentStation.country)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: 11, weight: .medium))
                             .foregroundColor(Color.appTextSecondary)
                     }
                     
@@ -232,3 +233,4 @@ struct FullPlayerSheetView: View {
         }
     }
 }
+

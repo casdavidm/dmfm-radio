@@ -20,3 +20,4 @@ extension Color {
     /// Tipografía secundaria y diales: Gris #9CA3AF
     static let appTextSecondary = Color(red: 156/255, green: 163/255, blue: 175/255)
 }
+
