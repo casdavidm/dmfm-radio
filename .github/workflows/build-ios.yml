@@ -18,14 +18,11 @@ jobs:
 
       - name: Set up Xcode
         run: |
-          if [ -d "/Applications/Xcode_16.1.app" ]; then
-            sudo xcode-select -s /Applications/Xcode_16.1.app
-          elif [ -d "/Applications/Xcode_16.0.app" ]; then
-            sudo xcode-select -s /Applications/Xcode_16.0.app
-          elif [ -d "/Applications/Xcode_15.4.app" ]; then
-            sudo xcode-select -s /Applications/Xcode_15.4.app
+          if [ -d "/Applications/Xcode.app" ]; then
+            sudo xcode-select -s /Applications/Xcode.app
           fi
           xcodebuild -version
+          xcodebuild -showsdks
 
       - name: Install XcodeGen
         run: |
@@ -37,15 +34,16 @@ jobs:
 
       - name: Build App & Package .ipa
         run: |
+          set -o pipefail
           xcodebuild build \
             -project DMFMRadio.xcodeproj \
             -scheme DMFMRadio \
             -configuration Release \
-            -destination "generic/platform=iOS" \
+            -sdk iphoneos \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            -derivedDataPath build
+            -derivedDataPath build 2>&1 | tee xcodebuild.log
 
           mkdir -p Payload
           cp -r build/Build/Products/Release-iphoneos/*.app Payload/
