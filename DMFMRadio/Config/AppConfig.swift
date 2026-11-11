@@ -1,19 +1,19 @@
 import Foundation
 
 /// Estructura de estación de radio para DM/FM
-struct RadioStation: Identifiable, Hashable, Codable {
-    let id: String
-    let name: String
-    let subtitle: String
-    let streamURL: String
-    let genre: String
-    let bitrate: String
-    let country: String
-    let countryCode: String
-    let codec: String
-    let faviconURL: String?
+public struct RadioStation: Identifiable, Hashable, Codable {
+    public let id: String
+    public let name: String
+    public let subtitle: String
+    public let streamURL: String
+    public let genre: String
+    public let bitrate: String
+    public let country: String
+    public let countryCode: String
+    public let codec: String
+    public let faviconURL: String?
     
-    init(
+    public init(
         id: String? = nil,
         name: String,
         subtitle: String = "",
@@ -38,30 +38,49 @@ struct RadioStation: Identifiable, Hashable, Codable {
     }
     
     /// Frecuencia simulada de dial FM (entre 88.0 y 107.9 MHz) basada en el hash de la emisora
-    var dialFrequency: Double {
+    public var dialFrequency: Double {
         let hashValue = abs(name.hashValue ^ streamURL.hashValue)
         let step = Double(hashValue % 200) / 10.0 // 0.0 a 19.9
         return 88.0 + step
     }
     
-    var dialFrequencyString: String {
+    public var dialFrequencyString: String {
         String(format: "%.1f FM", dialFrequency)
+    }
+    
+    /// URL para Deeplink hacia la app principal
+    public var deeplinkURL: URL? {
+        var components = URLComponents()
+        components.scheme = "dmfm"
+        components.host = "play"
+        components.queryItems = [
+            URLQueryItem(name: "id", value: id),
+            URLQueryItem(name: "name", value: name),
+            URLQueryItem(name: "stream", value: streamURL),
+            URLQueryItem(name: "subtitle", value: subtitle),
+            URLQueryItem(name: "genre", value: genre),
+            URLQueryItem(name: "bitrate", value: bitrate),
+            URLQueryItem(name: "country", value: country),
+            URLQueryItem(name: "countryCode", value: countryCode),
+            URLQueryItem(name: "codec", value: codec)
+        ]
+        return components.url
     }
 }
 
 /// Configuración general de DM/FM Radio
-enum AppConfig {
+public enum AppConfig {
     /// Nombre principal de la emisora
-    static let appName = "DM/FM Radio"
+    public static let appName = "DM/FM Radio"
     
     /// Slogan o descripción de la radio
-    static let appTagline = "Base de datos mundial de emisoras en vivo"
+    public static let appTagline = "Base de datos mundial de emisoras en vivo"
     
     /// Estación predeterminada (Stream de demostración de alta disponibilidad)
-    static let defaultStreamURL = "https://ice1.somafm.com/groovesalad-128-mp3"
+    public static let defaultStreamURL = "https://ice1.somafm.com/groovesalad-128-mp3"
     
     /// Lista de estaciones iniciales / canales destacados de DM/FM
-    static let defaultStations: [RadioStation] = [
+    public static let defaultStations: [RadioStation] = [
         RadioStation(
             id: "dmfm-main",
             name: "DM/FM Principal",

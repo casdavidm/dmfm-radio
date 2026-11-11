@@ -44,6 +44,57 @@ struct ContentView: View {
         .sheet(isPresented: $showingFullPlayer) {
             FullPlayerSheetView(player: player)
         }
+        .onOpenURL { url in
+            handleDeeplink(url)
+        }
+    }
+    
+    // MARK: - Deeplink Handling
+    
+    private func handleDeeplink(_ url: URL) {
+        guard url.scheme == "dmfm", url.host == "play" else { return }
+        
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        let queryItems = components?.queryItems ?? []
+        
+        let id = queryItems.first(where: { $0.name == "id" })?.value
+        let stream = queryItems.first(where: { $0.name == "stream" })?.value
+        let name = queryItems.first(where: { $0.name == "name" })?.value ?? "DM/FM Radio"
+        let subtitle = queryItems.first(where: { $0.name == "subtitle" })?.value ?? ""
+        let genre = queryItems.first(where: { $0.name == "genre" })?.value ?? "En vivo"
+        let bitrate = queryItems.first(where: { $0.name == "bitrate" })?.value ?? "128 kbps"
+        let country = queryItems.first(where: { $0.name == "country" })?.value ?? ""
+        let countryCode = queryItems.first(where: { $0.name == "countryCode" })?.value ?? ""
+        let codec = queryItems.first(where: { $0.name == "codec" })?.value ?? "MP3"
+        
+        // 1. Buscar en emisoras recientes guardadas
+        let recents = RecentStationsManager.shared.getRecentStations()
+        if let match = recents.first(where: { $0.id == id || ($0.streamURL == stream && stream != nil && !stream!.isEmpty) }) {
+            player.switchStation(to: match)
+            return
+        }
+        
+        // 2. Buscar en las predeterminadas
+        if let match = AppConfig.defaultStations.first(where: { $0.id == id || ($0.streamURL == stream && stream != nil && !stream!.isEmpty) }) {
+            player.switchStation(to: match)
+            return
+        }
+        
+        // 3. Reconstruir emisora desde parámetros
+        if let stream = stream, !stream.isEmpty {
+            let station = RadioStation(
+                id: id,
+                name: name,
+                subtitle: subtitle,
+                streamURL: stream,
+                genre: genre,
+                bitrate: bitrate,
+                country: country,
+                countryCode: countryCode,
+                codec: codec
+            )
+            player.switchStation(to: station)
+        }
     }
     
     // MARK: - Subvistas

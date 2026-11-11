@@ -55,13 +55,7 @@ final class RadioPlayer: ObservableObject {
     
     // MARK: - Initialization
     private init() {
-        self.currentStation = AppConfig.defaultStations.first ?? RadioStation(
-            name: AppConfig.appName,
-            subtitle: AppConfig.appTagline,
-            streamURL: AppConfig.defaultStreamURL,
-            genre: "En vivo",
-            bitrate: "128 kbps"
-        )
+        self.currentStation = RecentStationsManager.shared.getLatestStation()
         
         setupAudioSession()
         setupRemoteCommands()
@@ -99,6 +93,8 @@ final class RadioPlayer: ObservableObject {
     
     /// Inicia la reproducción del stream actual
     func play() {
+        RecentStationsManager.shared.saveRecentStation(currentStation)
+        
         guard let url = URL(string: currentStation.streamURL) else {
             self.state = .error("URL de stream inválida: \(currentStation.streamURL)")
             self.errorMessage = "URL de stream inválida"
