@@ -7,7 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1E8A595F3F2F84E0EE34660B /* StationCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B093494A0E0DB1ABAFCF233 /* StationCardView.swift */; };
+		259644CDC103A822C29EFE5E /* RadioBrowserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A86D5373B037B90A1270E1 /* RadioBrowserService.swift */; };
 		25CD6F27E7EC348308D8921A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67A80276F5514C10C2F6DD26 /* Assets.xcassets */; };
+		61E1534EB2DB1CDADB7B2E4B /* PersistentMiniPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A5F470A5046F86F2C64DF1 /* PersistentMiniPlayerView.swift */; };
+		73BA542B4AE066BBD93840E6 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A1757A70D6741916E5DE1C /* AppTheme.swift */; };
 		9CA6A74408ACDA1186FFE7BE /* RadioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC82F302BEF2EFE369C2205E /* RadioPlayer.swift */; };
 		A2CCADC9A8EAB4C7739DC644 /* VisualizerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C6E3DB6DE23D3BBB43816E /* VisualizerView.swift */; };
 		A4EDB442CA21B40ADFFFFEED /* PlayerControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FE6D0109669E1F6DA5A7DA0 /* PlayerControlsView.swift */; };
@@ -15,14 +19,24 @@
 		B698FF4A94F80C33BBCE070B /* DMFMApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A8859D4814237528137C48 /* DMFMApp.swift */; };
 		B787905EA4B598E4A8A1E193 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FBD803661530056FA28E60B /* AppConfig.swift */; };
 		BF71F7AADD9F6587D179701D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5B3AEA528963BF0938A82CF /* ContentView.swift */; };
+		C31E3D50FCC4A8C1F8299DE0 /* VinylDiscView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69727D051157B996B65E1219 /* VinylDiscView.swift */; };
+		D56D6531E3B4187D3715310B /* FullPlayerSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 073D3BFE1C9A5B20008F17E7 /* FullPlayerSheetView.swift */; };
+		DFAD96620FD40698AC82B225 /* FavoritesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A5AC1002536DD2A62575903 /* FavoritesManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		073D3BFE1C9A5B20008F17E7 /* FullPlayerSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullPlayerSheetView.swift; sourceTree = "<group>"; };
+		08A1757A70D6741916E5DE1C /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		1FBD803661530056FA28E60B /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		48A86D5373B037B90A1270E1 /* RadioBrowserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioBrowserService.swift; sourceTree = "<group>"; };
 		49DFAA0BE7EDAF5D1A8C9286 /* DMFMRadio.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DMFMRadio.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A5AC1002536DD2A62575903 /* FavoritesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesManager.swift; sourceTree = "<group>"; };
 		5FE6D0109669E1F6DA5A7DA0 /* PlayerControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerControlsView.swift; sourceTree = "<group>"; };
 		67A80276F5514C10C2F6DD26 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		69727D051157B996B65E1219 /* VinylDiscView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VinylDiscView.swift; sourceTree = "<group>"; };
 		84C6E3DB6DE23D3BBB43816E /* VisualizerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualizerView.swift; sourceTree = "<group>"; };
+		8B093494A0E0DB1ABAFCF233 /* StationCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationCardView.swift; sourceTree = "<group>"; };
+		96A5F470A5046F86F2C64DF1 /* PersistentMiniPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentMiniPlayerView.swift; sourceTree = "<group>"; };
 		D1AB3CAC78B5A1F08EC6C102 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D5B3AEA528963BF0938A82CF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D6A8859D4814237528137C48 /* DMFMApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DMFMApp.swift; sourceTree = "<group>"; };
@@ -42,6 +56,8 @@
 		4432395FE7D17633D510CA56 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				5A5AC1002536DD2A62575903 /* FavoritesManager.swift */,
+				48A86D5373B037B90A1270E1 /* RadioBrowserService.swift */,
 				FC82F302BEF2EFE369C2205E /* RadioPlayer.swift */,
 			);
 			path = Services;
@@ -55,6 +71,7 @@
 				ED87F852CDB6FD4C5B847307 /* Info.plist */,
 				BCF3B2E765D570B2D1331EA2 /* Config */,
 				4432395FE7D17633D510CA56 /* Services */,
+				A70CB9D04B4F202DD075D69D /* Theme */,
 				9D862C4561638677CA2F27A3 /* Views */,
 			);
 			path = DMFMRadio;
@@ -64,11 +81,23 @@
 			isa = PBXGroup;
 			children = (
 				D5B3AEA528963BF0938A82CF /* ContentView.swift */,
+				073D3BFE1C9A5B20008F17E7 /* FullPlayerSheetView.swift */,
+				96A5F470A5046F86F2C64DF1 /* PersistentMiniPlayerView.swift */,
 				5FE6D0109669E1F6DA5A7DA0 /* PlayerControlsView.swift */,
 				D1AB3CAC78B5A1F08EC6C102 /* SettingsView.swift */,
+				8B093494A0E0DB1ABAFCF233 /* StationCardView.swift */,
+				69727D051157B996B65E1219 /* VinylDiscView.swift */,
 				84C6E3DB6DE23D3BBB43816E /* VisualizerView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		A70CB9D04B4F202DD075D69D /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				08A1757A70D6741916E5DE1C /* AppTheme.swift */,
+			);
+			path = Theme;
 			sourceTree = "<group>";
 		};
 		BCF3B2E765D570B2D1331EA2 /* Config */ = {
@@ -158,11 +187,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				B787905EA4B598E4A8A1E193 /* AppConfig.swift in Sources */,
+				73BA542B4AE066BBD93840E6 /* AppTheme.swift in Sources */,
 				BF71F7AADD9F6587D179701D /* ContentView.swift in Sources */,
 				B698FF4A94F80C33BBCE070B /* DMFMApp.swift in Sources */,
+				DFAD96620FD40698AC82B225 /* FavoritesManager.swift in Sources */,
+				D56D6531E3B4187D3715310B /* FullPlayerSheetView.swift in Sources */,
+				61E1534EB2DB1CDADB7B2E4B /* PersistentMiniPlayerView.swift in Sources */,
 				A4EDB442CA21B40ADFFFFEED /* PlayerControlsView.swift in Sources */,
+				259644CDC103A822C29EFE5E /* RadioBrowserService.swift in Sources */,
 				9CA6A74408ACDA1186FFE7BE /* RadioPlayer.swift in Sources */,
 				B1ED3EC54AB5D166B0E45CF5 /* SettingsView.swift in Sources */,
+				1E8A595F3F2F84E0EE34660B /* StationCardView.swift in Sources */,
+				C31E3D50FCC4A8C1F8299DE0 /* VinylDiscView.swift in Sources */,
 				A2CCADC9A8EAB4C7739DC644 /* VisualizerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -177,7 +213,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				ENABLE_PREVIEWS = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -229,7 +265,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -261,7 +297,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				ENABLE_PREVIEWS = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -313,7 +349,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;

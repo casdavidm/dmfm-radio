@@ -12,7 +12,7 @@ settings:
     CODE_SIGN_STYLE: Manual
     CODE_SIGNING_REQUIRED: NO
     CODE_SIGNING_ALLOWED: NO
-    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_IDENTITY: ""
 
 targets:
   DMFMRadio:
@@ -36,7 +36,7 @@ targets:
         CODE_SIGN_STYLE: Manual
         CODE_SIGNING_REQUIRED: NO
         CODE_SIGNING_ALLOWED: NO
-        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_IDENTITY: ""
         ENABLE_PREVIEWS: NO
 
 schemes:
