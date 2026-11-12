@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		05759DA0848964691EC89B25 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A1757A70D6741916E5DE1C /* AppTheme.swift */; };
 		1A7107CCA38267D0A71726DB /* RecentStationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6209176E2611AB3E96786C /* RecentStationsManager.swift */; };
+		5B9D3C2E7F1A4B80C3D5F902 /* PlayStationIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F8E2A1C5D7B4960A2C4E8F1 /* PlayStationIntent.swift */; };
+		6C0E4D3F8A2B5C91D4E60A13 /* PlayStationIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F8E2A1C5D7B4960A2C4E8F1 /* PlayStationIntent.swift */; };
 		1E8A595F3F2F84E0EE34660B /* StationCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B093494A0E0DB1ABAFCF233 /* StationCardView.swift */; };
 		259644CDC103A822C29EFE5E /* RadioBrowserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A86D5373B037B90A1270E1 /* RadioBrowserService.swift */; };
 		25CD6F27E7EC348308D8921A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67A80276F5514C10C2F6DD26 /* Assets.xcassets */; };
@@ -16,16 +18,18 @@
 		49E1B6A8130F1D04F0C690D8 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FBD803661530056FA28E60B /* AppConfig.swift */; };
 		61E1534EB2DB1CDADB7B2E4B /* PersistentMiniPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A5F470A5046F86F2C64DF1 /* PersistentMiniPlayerView.swift */; };
 		73BA542B4AE066BBD93840E6 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A1757A70D6741916E5DE1C /* AppTheme.swift */; };
+		74DC44E13071A6FC7FEAA5C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3CAB3023E150D324895924AF /* Assets.xcassets */; };
 		9CA6A74408ACDA1186FFE7BE /* RadioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC82F302BEF2EFE369C2205E /* RadioPlayer.swift */; };
-		A2CCADC9A8EAB4C7739DC644 /* VisualizerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C6E3DB6DE23D3BBB43816E /* VisualizerView.swift */; };
-		A4EDB442CA21B40ADFFFFEED /* PlayerControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FE6D0109669E1F6DA5A7DA0 /* PlayerControlsView.swift */; };
+		A2CCADC9A8EAB4C7739DC644 /* RetroComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C6E3DB6DE23D3BBB43816E /* RetroComponents.swift */; };
+		A4EDB442CA21B40ADFFFFEED /* RadioTunerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FE6D0109669E1F6DA5A7DA0 /* RadioTunerView.swift */; };
 		B1ED3EC54AB5D166B0E45CF5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1AB3CAC78B5A1F08EC6C102 /* SettingsView.swift */; };
 		B4D40418F1A766C7D9EDF152 /* RecentStationsWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4866A72A080C69FA9D9316F /* RecentStationsWidget.swift */; };
 		B698FF4A94F80C33BBCE070B /* DMFMApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A8859D4814237528137C48 /* DMFMApp.swift */; };
 		B787905EA4B598E4A8A1E193 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FBD803661530056FA28E60B /* AppConfig.swift */; };
 		B9B92804EE041045BF27EBC9 /* DMFMRadioWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 61B47D772ED784BE88555B25 /* DMFMRadioWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BF71F7AADD9F6587D179701D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5B3AEA528963BF0938A82CF /* ContentView.swift */; };
-		C31E3D50FCC4A8C1F8299DE0 /* VinylDiscView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69727D051157B996B65E1219 /* VinylDiscView.swift */; };
+		7D1A4C2E9B3F5E6A8C0D1F24 /* TunerDialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69727D051157B996B65E1219 /* TunerDialView.swift */; };
+		C31E3D50FCC4A8C1F8299DE0 /* TunerDialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69727D051157B996B65E1219 /* TunerDialView.swift */; };
 		D56D6531E3B4187D3715310B /* FullPlayerSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 073D3BFE1C9A5B20008F17E7 /* FullPlayerSheetView.swift */; };
 		DFAD96620FD40698AC82B225 /* FavoritesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A5AC1002536DD2A62575903 /* FavoritesManager.swift */; };
 /* End PBXBuildFile section */
@@ -58,16 +62,18 @@
 		073D3BFE1C9A5B20008F17E7 /* FullPlayerSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullPlayerSheetView.swift; sourceTree = "<group>"; };
 		08A1757A70D6741916E5DE1C /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		1FBD803661530056FA28E60B /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		3CAB3023E150D324895924AF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		48A86D5373B037B90A1270E1 /* RadioBrowserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioBrowserService.swift; sourceTree = "<group>"; };
 		49DFAA0BE7EDAF5D1A8C9286 /* DMFMRadio.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DMFMRadio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A5AC1002536DD2A62575903 /* FavoritesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesManager.swift; sourceTree = "<group>"; };
-		5FE6D0109669E1F6DA5A7DA0 /* PlayerControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerControlsView.swift; sourceTree = "<group>"; };
+		5FE6D0109669E1F6DA5A7DA0 /* RadioTunerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioTunerView.swift; sourceTree = "<group>"; };
 		61B47D772ED784BE88555B25 /* DMFMRadioWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DMFMRadioWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		67A80276F5514C10C2F6DD26 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		69727D051157B996B65E1219 /* VinylDiscView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VinylDiscView.swift; sourceTree = "<group>"; };
+		69727D051157B996B65E1219 /* TunerDialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerDialView.swift; sourceTree = "<group>"; };
 		6B07531C6B9B1026D8BCB9EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6D6209176E2611AB3E96786C /* RecentStationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentStationsManager.swift; sourceTree = "<group>"; };
-		84C6E3DB6DE23D3BBB43816E /* VisualizerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualizerView.swift; sourceTree = "<group>"; };
+		3F8E2A1C5D7B4960A2C4E8F1 /* PlayStationIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayStationIntent.swift; sourceTree = "<group>"; };
+		84C6E3DB6DE23D3BBB43816E /* RetroComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroComponents.swift; sourceTree = "<group>"; };
 		8B093494A0E0DB1ABAFCF233 /* StationCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationCardView.swift; sourceTree = "<group>"; };
 		96A5F470A5046F86F2C64DF1 /* PersistentMiniPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentMiniPlayerView.swift; sourceTree = "<group>"; };
 		A40A3E726CDC82A5302E57CF /* DMFMRadioWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DMFMRadioWidget.entitlements; sourceTree = "<group>"; };
@@ -93,6 +99,7 @@
 		269BE1256E5668EB7EB7C72A /* DMFMRadioWidget */ = {
 			isa = PBXGroup;
 			children = (
+				3CAB3023E150D324895924AF /* Assets.xcassets */,
 				A40A3E726CDC82A5302E57CF /* DMFMRadioWidget.entitlements */,
 				6B07531C6B9B1026D8BCB9EA /* Info.plist */,
 				B4866A72A080C69FA9D9316F /* RecentStationsWidget.swift */,
@@ -132,11 +139,11 @@
 				D5B3AEA528963BF0938A82CF /* ContentView.swift */,
 				073D3BFE1C9A5B20008F17E7 /* FullPlayerSheetView.swift */,
 				96A5F470A5046F86F2C64DF1 /* PersistentMiniPlayerView.swift */,
-				5FE6D0109669E1F6DA5A7DA0 /* PlayerControlsView.swift */,
+				5FE6D0109669E1F6DA5A7DA0 /* RadioTunerView.swift */,
 				D1AB3CAC78B5A1F08EC6C102 /* SettingsView.swift */,
 				8B093494A0E0DB1ABAFCF233 /* StationCardView.swift */,
-				69727D051157B996B65E1219 /* VinylDiscView.swift */,
-				84C6E3DB6DE23D3BBB43816E /* VisualizerView.swift */,
+				69727D051157B996B65E1219 /* TunerDialView.swift */,
+				84C6E3DB6DE23D3BBB43816E /* RetroComponents.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -152,6 +159,7 @@
 		B76F28A543CF32E59E0C3868 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				3F8E2A1C5D7B4960A2C4E8F1 /* PlayStationIntent.swift */,
 				6D6209176E2611AB3E96786C /* RecentStationsManager.swift */,
 			);
 			path = Shared;
@@ -202,6 +210,7 @@
 			buildConfigurationList = 5F8FEA912BFA5B5893C7611F /* Build configuration list for PBXNativeTarget "DMFMRadioWidget" */;
 			buildPhases = (
 				6AC3EE35B53671D4934F2777 /* Sources */,
+				30FF7798C86F1C5A3BD979D5 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -224,10 +233,10 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					923BDF9D946BF928AB424992 = {
-						ProvisioningStyle = Manual;
+						ProvisioningStyle = Automatic;
 					};
 					D29AC3CDB2746B108F0BBBA1 = {
-						ProvisioningStyle = Manual;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -252,6 +261,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		30FF7798C86F1C5A3BD979D5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				74DC44E13071A6FC7FEAA5C1 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B131FF8002DD2C86E586F4B4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -274,14 +291,15 @@
 				DFAD96620FD40698AC82B225 /* FavoritesManager.swift in Sources */,
 				D56D6531E3B4187D3715310B /* FullPlayerSheetView.swift in Sources */,
 				61E1534EB2DB1CDADB7B2E4B /* PersistentMiniPlayerView.swift in Sources */,
-				A4EDB442CA21B40ADFFFFEED /* PlayerControlsView.swift in Sources */,
+				A4EDB442CA21B40ADFFFFEED /* RadioTunerView.swift in Sources */,
 				259644CDC103A822C29EFE5E /* RadioBrowserService.swift in Sources */,
 				9CA6A74408ACDA1186FFE7BE /* RadioPlayer.swift in Sources */,
+				5B9D3C2E7F1A4B80C3D5F902 /* PlayStationIntent.swift in Sources */,
 				391BEC56675F1DE9142EFFCE /* RecentStationsManager.swift in Sources */,
 				B1ED3EC54AB5D166B0E45CF5 /* SettingsView.swift in Sources */,
 				1E8A595F3F2F84E0EE34660B /* StationCardView.swift in Sources */,
-				C31E3D50FCC4A8C1F8299DE0 /* VinylDiscView.swift in Sources */,
-				A2CCADC9A8EAB4C7739DC644 /* VisualizerView.swift in Sources */,
+				C31E3D50FCC4A8C1F8299DE0 /* TunerDialView.swift in Sources */,
+				A2CCADC9A8EAB4C7739DC644 /* RetroComponents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,6 +309,8 @@
 			files = (
 				49E1B6A8130F1D04F0C690D8 /* AppConfig.swift in Sources */,
 				05759DA0848964691EC89B25 /* AppTheme.swift in Sources */,
+				7D1A4C2E9B3F5E6A8C0D1F24 /* TunerDialView.swift in Sources */,
+				6C0E4D3F8A2B5C91D4E60A13 /* PlayStationIntent.swift in Sources */,
 				1A7107CCA38267D0A71726DB /* RecentStationsManager.swift in Sources */,
 				B4D40418F1A766C7D9EDF152 /* RecentStationsWidget.swift in Sources */,
 			);
@@ -310,11 +330,9 @@
 		0D7E2A7BFC8FA02B4C8255B0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_ENTITLEMENTS = DMFMRadioWidget/DMFMRadioWidget.entitlements;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DMFMRadioWidget/Info.plist;
@@ -337,11 +355,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_ENTITLEMENTS = DMFMRadio/DMFMRadio.entitlements;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DMFMRadio/Info.plist;
@@ -360,11 +376,9 @@
 		15FDA053973B05E8A387510D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_ENTITLEMENTS = DMFMRadioWidget/DMFMRadioWidget.entitlements;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DMFMRadioWidget/Info.plist;
@@ -415,10 +429,6 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -447,11 +457,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_ENTITLEMENTS = DMFMRadio/DMFMRadio.entitlements;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DMFMRadio/Info.plist;
@@ -500,10 +508,6 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

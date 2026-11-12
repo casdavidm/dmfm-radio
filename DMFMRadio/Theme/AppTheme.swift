@@ -20,3 +20,26 @@ extension Color {
     /// Tipografía secundaria y diales: Gris #9CA3AF
     public static let appTextSecondary = Color(red: 156/255, green: 163/255, blue: 175/255)
 }
+
+// MARK: - Tipografía retro-moderna
+
+extension Font {
+    /// Tipografía condensada estilo dial de radio clásica
+    static func retro(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
+        Font.system(size: size, weight: weight).width(.condensed)
+    }
+}
+
+// MARK: - Formas auxiliares
+
+/// Triángulo apuntando hacia arriba (aguja del dial)
+struct Triangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}

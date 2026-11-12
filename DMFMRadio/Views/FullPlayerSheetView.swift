@@ -1,236 +1,254 @@
 import SwiftUI
 
-/// Hoja modal de controles completos y reproductor con vinilo y dial de frecuencia
+/// Hoja "Reproduciendo": carátula circular con arco de señal, controles y ficha de la emisora
 struct FullPlayerSheetView: View {
     @ObservedObject var player: RadioPlayer
     @ObservedObject var favoritesManager = FavoritesManager.shared
     @Environment(\.dismiss) private var dismiss
+    var onPrevious: () -> Void = {}
+    var onNext: () -> Void = {}
+    var skipEnabled: Bool = false
+    
+    private var station: RadioStation { player.currentStation }
+    
+    private var faviconURL: URL? {
+        guard let raw = station.faviconURL, !raw.isEmpty else { return nil }
+        return URL(string: raw)
+    }
+    
+    private var initials: String {
+        let words = station.name.split(separator: " ").prefix(2)
+        let letters = words.compactMap { $0.first }.map { String($0).uppercased() }
+        return letters.isEmpty ? "FM" : letters.joined()
+    }
     
     var body: some View {
-        ZStack {
-            // Fondo Azul oscuro #111827
-            Color.appBackground
-                .ignoresSafeArea()
+        GeometryReader { geo in
+            let artworkSize = min(geo.size.width - 96, geo.size.height * 0.38, 300)
             
-            VStack(spacing: 20) {
-                // MARK: - Barra Superior / Dismiss
-                HStack {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 17, weight: .bold))
-                            .foregroundColor(Color.appTextSecondary)
-                            .frame(width: 38, height: 38)
-                            .background(Color.appCard)
-                            .cornerRadius(10)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.appBorder, lineWidth: 1))
-                    }
-                    
-                    Spacer()
-                    
-                    VStack(spacing: 3) {
-                        Image("Logo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 18)
-                        
-                        Text(player.currentStation.country.isEmpty ? "Transmisión Digital" : player.currentStation.country)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(Color.appTextSecondary)
-                    }
-                    
-                    Spacer()
-                    
-                    // Botón de Favoritos
-                    Button(action: {
-                        favoritesManager.toggleFavorite(player.currentStation)
-                    }) {
-                        let isFav = favoritesManager.isFavorite(player.currentStation)
-                        Image(systemName: isFav ? "star.fill" : "star")
-                            .font(.system(size: 17))
-                            .foregroundColor(isFav ? Color.appAccent : Color.appTextSecondary)
-                            .frame(width: 38, height: 38)
-                            .background(Color.appCard)
-                            .cornerRadius(10)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.appBorder, lineWidth: 1))
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
+            ZStack {
+                Color.appBackground
+                    .ignoresSafeArea()
                 
-                Spacer(minLength: 4)
-                
-                // MARK: - Vinilo Minimalista Giratorio
-                VinylDiscView(isPlaying: player.state.isPlaying, size: 210)
-                    .padding(.vertical, 8)
-                
-                Spacer(minLength: 4)
-                
-                // MARK: - Dial de Frecuencia FM Estilizado
-                VStack(spacing: 8) {
+                VStack(spacing: 0) {
+                    // MARK: - Barra superior
                     HStack {
-                        Text("FM STEREO")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
-                            .foregroundColor(Color.appTextSecondary)
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(Color.appTextPrimary)
+                                .frame(width: 42, height: 42)
+                        }
+                        .buttonStyle(.plain)
+                        .neumorphicRaised(Circle(), shadowRadius: 7)
+                        .accessibilityLabel("Cerrar")
                         
                         Spacer()
                         
-                        Text(player.currentStation.dialFrequencyString)
-                            .font(.system(size: 16, weight: .black, design: .monospaced))
-                            .foregroundColor(Color.appAccent)
-                    }
-                    .padding(.horizontal, 4)
-                    
-                    // Escala de sintonizador analógica/digital
-                    GeometryReader { geo in
-                        let width = geo.size.width
-                        let freq = player.currentStation.dialFrequency
-                        let clampedFreq = min(max(freq, 88.0), 108.0)
-                        let percent = CGFloat((clampedFreq - 88.0) / 20.0) // 0.0 a 1.0
-                        let needleX = percent * width
+                        Image("Logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 20)
                         
-                        ZStack(alignment: .leading) {
-                            // Fondo de la escala
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.appCard)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.appBorder, lineWidth: 1)
-                                )
-                            
-                            // Marcas de dial graduadas
-                            HStack(spacing: 0) {
-                                ForEach(0..<21, id: \.self) { i in
-                                    VStack {
-                                        Rectangle()
-                                            .fill(i % 5 == 0 ? Color.appTextPrimary.opacity(0.8) : Color.appTextSecondary.opacity(0.35))
-                                            .frame(width: 1.5, height: i % 5 == 0 ? 14 : 7)
-                                        
-                                        if i % 5 == 0 {
-                                            Text("\(88 + i)")
-                                                .font(.system(size: 8, weight: .bold, design: .monospaced))
-                                                .foregroundColor(Color.appTextSecondary)
-                                        }
-                                        Spacer()
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                }
-                            }
-                            .padding(.top, 6)
-                            .padding(.horizontal, 8)
-                            
-                            // Aguja indicadora en Amarillo #ffc61a
-                            Rectangle()
-                                .fill(Color.appAccent)
-                                .frame(width: 2.5, height: 42)
-                                .shadow(color: Color.appAccent.opacity(0.8), radius: 4)
-                                .offset(x: max(8, min(needleX, width - 8)) - 1.25, y: 0)
+                        Spacer()
+                        
+                        Button(action: {
+                            hapticTap()
+                            favoritesManager.toggleFavorite(station)
+                        }) {
+                            let isFav = favoritesManager.isFavorite(station)
+                            Image(systemName: isFav ? "star.fill" : "star")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(isFav ? Color.appAccent : Color.appTextSecondary)
+                                .frame(width: 42, height: 42)
                         }
+                        .buttonStyle(.plain)
+                        .neumorphicRaised(Circle(), shadowRadius: 7)
+                        .accessibilityLabel("Favorito")
                     }
-                    .frame(height: 52)
-                }
-                .padding(.horizontal, 24)
-                
-                // MARK: - Información de Emisora y Canción en Vivo
-                VStack(spacing: 6) {
-                    Text(player.currentStation.name)
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(Color.appTextPrimary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 20)
                     
-                    Text(player.trackTitle.isEmpty ? player.currentStation.genre : player.trackTitle)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Color.appTextSecondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .padding(.horizontal, 16)
-                    
-                    // Tag de calidad
-                    Text(player.currentStation.bitrate)
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundColor(Color.appAccent)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 3)
-                        .background(Color.appCard)
-                        .cornerRadius(6)
-                        .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.appBorder, lineWidth: 1))
-                }
-                .padding(.horizontal, 24)
-                
-                // MARK: - Control de Volumen
-                HStack(spacing: 12) {
-                    Button(action: {
-                        player.isMuted.toggle()
-                    }) {
-                        Image(systemName: player.isMuted ? "speaker.slash.fill" : "speaker.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(player.isMuted ? Color.appAccent : Color.appTextSecondary)
+                    // MARK: - Ahora suena
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text("AHORA SUENA")
+                                .font(.system(size: 10, weight: .semibold))
+                                .tracking(2)
+                                .foregroundColor(Color.appTextSecondary)
+                            
+                            Spacer()
+                            
+                            LiveBadge(isPlaying: player.state.isPlaying, isBuffering: player.state.isBuffering)
+                        }
+                        
+                        Text("\(station.dialFrequencyString.replacingOccurrences(of: " FM", with: "")) · \(station.name.uppercased())")
+                            .font(.retro(24))
+                            .foregroundColor(Color.appTextPrimary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                            .frame(maxWidth: .infinity)
                     }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 22)
                     
-                    Slider(value: $player.volume, in: 0...1)
-                        .accentColor(Color.appAccent)
+                    Spacer()
                     
-                    Image(systemName: "speaker.wave.3.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(Color.appTextSecondary)
-                }
-                .padding(.horizontal, 28)
-                .padding(.top, 4)
-                
-                // MARK: - Controles Principales de Reproducción
-                HStack(spacing: 36) {
-                    // Botón Detener
-                    Button(action: {
-                        player.stop()
-                    }) {
-                        Image(systemName: "stop.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(Color.appTextSecondary)
-                            .frame(width: 50, height: 50)
-                            .background(Color.appCard)
-                            .cornerRadius(14)
-                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.appBorder, lineWidth: 1))
-                    }
-                    
-                    // Botón Central Play/Pause en Amarillo #ffc61a
-                    Button(action: {
-                        player.togglePlayPause()
-                    }) {
+                    // MARK: - Carátula circular con arco de señal
+                    ZStack {
+                        Circle()
+                            .strokeBorder(Color.appBorder.opacity(0.6), lineWidth: 1)
+                            .frame(width: artworkSize + 32, height: artworkSize + 32)
+                        
+                        TimelineView(.animation(paused: !player.state.isPlaying)) { timeline in
+                            let seconds = timeline.date.timeIntervalSinceReferenceDate
+                            let rotation = seconds.truncatingRemainder(dividingBy: 4) / 4 * 360
+                            
+                            Circle()
+                                .trim(from: 0, to: 0.32)
+                                .stroke(Color.appAccent, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                                .frame(width: artworkSize + 32, height: artworkSize + 32)
+                                .rotationEffect(.degrees(player.state.isPlaying ? rotation - 90 : -90))
+                                .shadow(color: Color.appAccent.opacity(0.6), radius: 6)
+                        }
+                        
+                        artwork(size: artworkSize)
+                            .clipShape(Circle())
+                            .overlay(Circle().strokeBorder(Color.appBorder.opacity(0.7), lineWidth: 1))
+                            .shadow(color: Color.black.opacity(0.6), radius: 22, x: 10, y: 14)
+                        
+                        // Etiqueta central
                         ZStack {
                             Circle()
-                                .fill(Color.appAccent)
-                                .frame(width: 72, height: 72)
-                                .shadow(color: Color.appAccent.opacity(0.4), radius: 10, x: 0, y: 4)
+                                .fill(Color.appBackground)
+                                .frame(width: artworkSize * 0.36, height: artworkSize * 0.36)
                             
-                            if player.state.isBuffering {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: Color.appBackground))
-                                    .scaleEffect(1.2)
-                            } else {
-                                Image(systemName: player.state.isPlaying ? "pause.fill" : "play.fill")
-                                    .font(.system(size: 26, weight: .heavy))
+                            Circle()
+                                .fill(Color.appAccent)
+                                .frame(width: artworkSize * 0.3, height: artworkSize * 0.3)
+                                .shadow(color: Color.black.opacity(0.4), radius: 6, x: 2, y: 4)
+                            
+                            VStack(spacing: 0) {
+                                Text(initials)
+                                    .font(.retro(artworkSize * 0.1))
                                     .foregroundColor(Color.appBackground)
-                                    .offset(x: player.state.isPlaying ? 0 : 2)
+                                Text("FM")
+                                    .font(.system(size: artworkSize * 0.045, weight: .bold))
+                                    .foregroundColor(Color.appBackground.opacity(0.75))
                             }
                         }
                     }
                     
-                    // Botón Mute / Desmutear
-                    Button(action: {
-                        player.isMuted.toggle()
-                    }) {
-                        Image(systemName: player.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(player.isMuted ? Color.appAccent : Color.appTextSecondary)
-                            .frame(width: 50, height: 50)
-                            .background(Color.appCard)
-                            .cornerRadius(14)
-                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.appBorder, lineWidth: 1))
+                    Spacer()
+                    
+                    // MARK: - Controles cuadrados
+                    HStack(spacing: 20) {
+                        squareButton(icon: "backward.fill", width: 62, action: onPrevious, label: "Emisora anterior")
+                            .disabled(!skipEnabled)
+                            .opacity(skipEnabled ? 1 : 0.45)
+                        
+                        Button(action: {
+                            hapticTap(.medium)
+                            player.togglePlayPause()
+                        }) {
+                            ZStack {
+                                if player.state.isBuffering {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: Color.appBackground))
+                                } else {
+                                    Image(systemName: player.state.isPlaying ? "pause.fill" : "play.fill")
+                                        .font(.system(size: 26, weight: .bold))
+                                        .foregroundColor(Color.appBackground)
+                                        .offset(x: player.state.isPlaying ? 0 : 2)
+                                }
+                            }
+                            .frame(width: 84, height: 64)
+                        }
+                        .buttonStyle(.plain)
+                        .neumorphicRaised(RoundedRectangle(cornerRadius: 20, style: .continuous), fill: Color.appAccent, shadowRadius: 10)
+                        .accessibilityLabel(player.state.isPlaying ? "Pausar" : "Reproducir")
+                        
+                        squareButton(icon: "forward.fill", width: 62, action: onNext, label: "Emisora siguiente")
+                            .disabled(!skipEnabled)
+                            .opacity(skipEnabled ? 1 : 0.45)
                     }
+                    
+                    Spacer()
+                    
+                    // MARK: - Ficha de la emisora
+                    HStack(spacing: 14) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.appBackground)
+                            Text(station.countryCode.isEmpty ? "FM" : station.countryCode.uppercased())
+                                .font(.retro(14))
+                                .foregroundColor(Color.appAccent)
+                        }
+                        .frame(width: 46, height: 46)
+                        .overlay(Circle().strokeBorder(Color.appBorder.opacity(0.7), lineWidth: 1))
+                        
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(player.trackTitle.isEmpty || !player.state.isPlaying ? station.name : player.trackTitle)
+                                .font(.retro(16))
+                                .foregroundColor(Color.appTextPrimary)
+                                .lineLimit(1)
+                            
+                            Text([station.country, station.genre].filter { !$0.isEmpty }.joined(separator: " · ").uppercased())
+                                .font(.system(size: 10, weight: .semibold))
+                                .tracking(1)
+                                .foregroundColor(Color.appTextSecondary)
+                                .lineLimit(1)
+                        }
+                        
+                        Spacer(minLength: 6)
+                        
+                        Text(station.bitrate)
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(Color.appAccent)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 5)
+                            .background(Capsule().fill(Color.appBackground))
+                            .overlay(Capsule().strokeBorder(Color.appBorder.opacity(0.7), lineWidth: 1))
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .neumorphicRaised(RoundedRectangle(cornerRadius: 26, style: .continuous), shadowRadius: 12)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 28)
                 }
-                .padding(.bottom, 24)
             }
         }
     }
+    
+    @ViewBuilder
+    private func artwork(size: CGFloat) -> some View {
+        if let url = faviconURL {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: size, height: size)
+                default:
+                    SpeakerGrilleView(size: size)
+                }
+            }
+            .frame(width: size, height: size)
+        } else {
+            SpeakerGrilleView(size: size)
+        }
+    }
+    
+    private func squareButton(icon: String, width: CGFloat, action: @escaping () -> Void, label: String) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(Color.appTextPrimary)
+                .frame(width: width, height: 56)
+        }
+        .buttonStyle(.plain)
+        .neumorphicRaised(RoundedRectangle(cornerRadius: 18, style: .continuous), shadowRadius: 8)
+        .accessibilityLabel(label)
+    }
 }
-

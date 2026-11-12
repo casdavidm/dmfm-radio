@@ -37,20 +37,17 @@ final class FavoritesManager: ObservableObject {
     }
     
     private func loadFavorites() {
+        let fillerIDs: Set<String> = ["dmfm-main", "dmfm-hits", "dmfm-chill", "dmfm-rock", "dmfm-placeholder"]
         guard let data = UserDefaults.standard.data(forKey: userDefaultsKey) else {
-            // Favorito inicial de demostración
-            if let first = AppConfig.defaultStations.first {
-                self.favoriteStations = [first]
-            }
+            self.favoriteStations = []
             return
         }
         do {
-            self.favoriteStations = try JSONDecoder().decode([RadioStation].self, from: data)
+            let decoded = try JSONDecoder().decode([RadioStation].self, from: data)
+            self.favoriteStations = decoded.filter { !fillerIDs.contains($0.id) && !$0.isPlaceholder }
         } catch {
             print("Error cargando favoritos: \(error.localizedDescription)")
-            if let first = AppConfig.defaultStations.first {
-                self.favoriteStations = [first]
-            }
+            self.favoriteStations = []
         }
     }
 }

@@ -9,10 +9,6 @@ settings:
   base:
     SWIFT_VERSION: "5.9"
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
-    CODE_SIGN_STYLE: Manual
-    CODE_SIGNING_REQUIRED: NO
-    CODE_SIGNING_ALLOWED: NO
-    CODE_SIGN_IDENTITY: ""
 
 targets:
   DMFMRadio:
@@ -23,6 +19,11 @@ targets:
       - path: DMFMRadio
     dependencies:
       - target: DMFMRadioWidget
+    entitlements:
+      path: DMFMRadio/DMFMRadio.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.casdavidm.dmfmradio
     scheme:
       archive:
         config: Release
@@ -36,10 +37,8 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         TARGETED_DEVICE_FAMILY: "1,2"
-        CODE_SIGN_STYLE: Manual
-        CODE_SIGNING_REQUIRED: NO
-        CODE_SIGNING_ALLOWED: NO
-        CODE_SIGN_IDENTITY: ""
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
         ENABLE_PREVIEWS: NO
 
   DMFMRadioWidget:
@@ -49,8 +48,15 @@ targets:
     sources:
       - path: DMFMRadioWidget
       - path: DMFMRadio/Shared/RecentStationsManager.swift
+      - path: DMFMRadio/Shared/PlayStationIntent.swift
       - path: DMFMRadio/Config/AppConfig.swift
       - path: DMFMRadio/Theme/AppTheme.swift
+      - path: DMFMRadio/Views/TunerDialView.swift
+    entitlements:
+      path: DMFMRadioWidget/DMFMRadioWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.casdavidm.dmfmradio
     settings:
       base:
         PRODUCT_NAME: DMFMRadioWidget
@@ -59,10 +65,8 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         CODE_SIGN_ENTITLEMENTS: DMFMRadioWidget/DMFMRadioWidget.entitlements
         TARGETED_DEVICE_FAMILY: "1,2"
-        CODE_SIGN_STYLE: Manual
-        CODE_SIGNING_REQUIRED: NO
-        CODE_SIGNING_ALLOWED: NO
-        CODE_SIGN_IDENTITY: ""
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
         SKIP_INSTALL: YES
         ENABLE_PREVIEWS: NO
 

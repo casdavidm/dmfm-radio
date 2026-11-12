@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Tarjeta minimalista de emisora de radio
+/// Tarjeta de emisora con mini dial, estilo retro-moderno
 struct StationCardView: View {
     let station: RadioStation
     let isSelected: Bool
@@ -10,84 +10,79 @@ struct StationCardView: View {
     let onPlayTapped: () -> Void
     let onFavoriteTapped: () -> Void
     
+    /// País y género sin repetir cuando el servicio usa el país como género de respaldo
+    private var subtitleText: String {
+        var parts = [station.country]
+        if !station.genre.isEmpty && station.genre.caseInsensitiveCompare(station.country) != .orderedSame {
+            parts.append(station.genre)
+        }
+        return parts.filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+    
     var body: some View {
         HStack(spacing: 14) {
-            // MARK: - Dial o Frecuencia Simulada
-            VStack(spacing: 3) {
-                Text(station.dialFrequencyString)
-                    .font(.system(size: 13, weight: .black, design: .monospaced))
-                    .foregroundColor(isSelected ? Color.appAccent : Color.appTextPrimary)
+            // MARK: - Mini dial con frecuencia
+            ZStack {
+                Circle()
+                    .fill(
+                        Color.appBackground
+                            .shadow(.inner(color: Color.black.opacity(0.65), radius: 5, x: 3, y: 3))
+                            .shadow(.inner(color: Color.white.opacity(0.05), radius: 4, x: -2, y: -2))
+                    )
                 
-                Text(station.codec)
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundColor(Color.appTextSecondary)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 2)
-                    .background(Color.appBackground.opacity(0.85))
-                    .cornerRadius(4)
+                VStack(spacing: 0) {
+                    Text(String(format: "%.1f", station.dialFrequency))
+                        .font(.retro(15))
+                        .foregroundColor(isSelected ? Color.appAccent : Color.appTextPrimary)
+                        .monospacedDigit()
+                    
+                    Text("FM")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundColor(Color.appTextSecondary)
+                }
             }
-            .frame(width: 68, height: 56)
-            .background(Color.appBackground)
-            .cornerRadius(10)
+            .frame(width: 58, height: 58)
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(isSelected ? Color.appAccent.opacity(0.5) : Color.appBorder.opacity(0.6), lineWidth: 1)
+                Circle()
+                    .strokeBorder(isSelected ? Color.appAccent.opacity(0.7) : Color.appBorder.opacity(0.6), lineWidth: 1)
             )
             
-            // MARK: - Información de la Emisora
+            // MARK: - Información
             VStack(alignment: .leading, spacing: 4) {
                 Text(station.name)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.retro(17))
                     .foregroundColor(isSelected ? Color.appAccent : Color.appTextPrimary)
                     .lineLimit(1)
                 
-                HStack(spacing: 6) {
-                    if !station.country.isEmpty {
-                        Text(station.country)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Color.appTextSecondary)
-                            .lineLimit(1)
-                    }
-                    
-                    if !station.genre.isEmpty {
-                        Text("•")
-                            .font(.system(size: 10))
-                            .foregroundColor(Color.appTextSecondary.opacity(0.6))
-                        
-                        Text(station.genre)
-                            .font(.system(size: 12))
-                            .foregroundColor(Color.appTextSecondary)
-                            .lineLimit(1)
-                    }
-                }
+                Text(subtitleText)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color.appTextSecondary)
+                    .lineLimit(1)
                 
                 Text(station.bitrate)
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundColor(Color.appTextSecondary.opacity(0.8))
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(Color.appTextSecondary.opacity(0.75))
             }
             
             Spacer(minLength: 4)
             
-            // MARK: - Botón Favorito
+            // MARK: - Favorito
             Button(action: onFavoriteTapped) {
                 Image(systemName: isFavorite ? "star.fill" : "star")
                     .font(.system(size: 15))
-                    .foregroundColor(isFavorite ? Color.appAccent : Color.appTextSecondary.opacity(0.6))
-                    .frame(width: 34, height: 34)
+                    .foregroundColor(isFavorite ? Color.appAccent : Color.appTextSecondary.opacity(0.7))
+                    .frame(width: 36, height: 36)
             }
-            .buttonStyle(BorderlessButtonStyle())
+            .buttonStyle(.plain)
+            .accessibilityLabel(isFavorite ? "Quitar de favoritos" : "Añadir a favoritos")
             
-            // MARK: - Botón Reproducir / Estado
+            // MARK: - Play / Pausa
             Button(action: onPlayTapped) {
                 ZStack {
-                    Circle()
-                        .fill(isSelected && isPlaying ? Color.appAccent : Color.appBackground)
-                        .frame(width: 40, height: 40)
-                    
                     if isSelected && isBuffering {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: isPlaying ? Color.appBackground : Color.appAccent))
-                            .scaleEffect(0.8)
+                            .scaleEffect(0.75)
                     } else {
                         Image(systemName: isSelected && isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: 14, weight: .bold))
@@ -95,20 +90,18 @@ struct StationCardView: View {
                             .offset(x: (isSelected && isPlaying) ? 0 : 1)
                     }
                 }
-                .overlay(
-                    Circle()
-                        .stroke(isSelected ? Color.appAccent : Color.appBorder, lineWidth: 1)
-                )
+                .frame(width: 42, height: 42)
             }
-            .buttonStyle(BorderlessButtonStyle())
+            .buttonStyle(.plain)
+            .neumorphicRaised(Circle(), fill: isSelected && isPlaying ? Color.appAccent : Color.appCard, shadowRadius: 6)
+            .accessibilityLabel(isSelected && isPlaying ? "Pausar" : "Reproducir")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(Color.appCard)
-        .cornerRadius(14)
+        .neumorphicRaised(RoundedRectangle(cornerRadius: 22, style: .continuous), shadowRadius: 9)
         .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(isSelected ? Color.appAccent.opacity(0.7) : Color.appBorder.opacity(0.6), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(Color.appAccent.opacity(isSelected ? 0.6 : 0), lineWidth: 1.5)
         )
         .contentShape(Rectangle())
         .onTapGesture {
@@ -116,4 +109,3 @@ struct StationCardView: View {
         }
     }
 }
-

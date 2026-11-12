@@ -1,96 +1,89 @@
 import SwiftUI
 
-/// Mini-reproductor persistente en la parte inferior de la pantalla
+/// Mini-reproductor persistente sobre la barra de pestañas
 struct PersistentMiniPlayerView: View {
     @ObservedObject var player: RadioPlayer
     let onOpenFullPlayer: () -> Void
     
+    private var station: RadioStation { player.currentStation }
+    
     var body: some View {
-        HStack(spacing: 12) {
-            // MARK: - Mini Vinilo Giratorio
-            VinylDiscView(isPlaying: player.state.isPlaying, size: 44)
+        HStack(spacing: 14) {
+            // MARK: - Mini dial
+            TunerDialView(
+                frequency: station.isPlaceholder ? nil : station.dialFrequency,
+                stationName: station.name,
+                isPlaying: player.state.isPlaying,
+                size: 50
+            )
             
-            // MARK: - Información de Emisora y Metadatos
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(player.currentStation.name)
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(Color.appTextPrimary)
-                        .lineLimit(1)
-                    
-                    Text(player.currentStation.dialFrequencyString)
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(Color.appAccent)
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 1.5)
-                        .background(Color.appBackground)
-                        .cornerRadius(4)
-                }
+            // MARK: - Emisora y estado
+            VStack(alignment: .leading, spacing: 3) {
+                Text(station.name)
+                    .font(.retro(17))
+                    .foregroundColor(Color.appBackground)
+                    .lineLimit(1)
                 
-                if player.state.isBuffering {
-                    HStack(spacing: 4) {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: Color.appAccent))
-                            .scaleEffect(0.6)
-                        
-                        Text("Sintonizando señal...")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(Color.appAccent)
-                    }
-                } else if player.state.isPlaying {
-                    Text(player.trackTitle.isEmpty ? player.currentStation.subtitle : player.trackTitle)
-                        .font(.system(size: 11))
-                        .foregroundColor(Color.appTextSecondary)
-                        .lineLimit(1)
-                } else {
-                    Text(player.state == .paused ? "En pausa" : "Listo para reproducir")
-                        .font(.system(size: 11))
-                        .foregroundColor(Color.appTextSecondary.opacity(0.8))
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(Color.appBackground.opacity(player.state.isPlaying || player.state.isBuffering ? 1 : 0.4))
+                        .frame(width: 6, height: 6)
+                    
+                    Text(statusText)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(Color.appBackground.opacity(0.75))
                         .lineLimit(1)
                 }
             }
             
             Spacer(minLength: 4)
             
-            // MARK: - Botón Circular Play/Pause en Amarillo #ffc61a
+            // MARK: - Play / Pausa
             Button(action: {
+                hapticTap(.medium)
                 player.togglePlayPause()
             }) {
                 ZStack {
-                    Circle()
-                        .fill(Color.appAccent)
-                        .frame(width: 44, height: 44)
-                        .shadow(color: Color.appAccent.opacity(0.35), radius: 6, x: 0, y: 2)
-                    
                     if player.state.isBuffering {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: Color.appBackground))
+                            .progressViewStyle(CircularProgressViewStyle(tint: Color.appAccent))
                             .scaleEffect(0.8)
                     } else {
                         Image(systemName: player.state.isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: 16, weight: .heavy))
-                            .foregroundColor(Color.appBackground)
+                            .foregroundColor(Color.appAccent)
                             .offset(x: player.state.isPlaying ? 0 : 1.5)
                     }
                 }
+                .frame(width: 46, height: 46)
             }
-            .buttonStyle(BorderlessButtonStyle())
+            .buttonStyle(.plain)
+            .background(
+                Circle()
+                    .fill(Color.appBackground)
+                    .shadow(color: Color.black.opacity(0.35), radius: 6, x: 3, y: 3)
+            )
+            .accessibilityLabel(player.state.isPlaying ? "Pausar" : "Reproducir")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(Color.appCard)
-                .shadow(color: Color.black.opacity(0.4), radius: 12, x: 0, y: 6)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.appBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.appAccent)
+                .shadow(color: Color.black.opacity(0.6), radius: 14, x: 0, y: 8)
+                .shadow(color: Color.appAccent.opacity(0.25), radius: 18, x: 0, y: 0)
         )
         .contentShape(Rectangle())
         .onTapGesture {
             onOpenFullPlayer()
         }
     }
+    
+    private var statusText: String {
+        if player.state.isBuffering { return "Sintonizando señal…" }
+        if player.state.isPlaying {
+            return player.trackTitle.isEmpty ? station.subtitle : player.trackTitle
+        }
+        return player.state == .paused ? "En pausa" : "Listo para reproducir"
+    }
 }
-

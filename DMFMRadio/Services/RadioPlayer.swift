@@ -55,7 +55,7 @@ final class RadioPlayer: ObservableObject {
     
     // MARK: - Initialization
     private init() {
-        self.currentStation = RecentStationsManager.shared.getLatestStation()
+        self.currentStation = RecentStationsManager.shared.getLatestStation() ?? AppConfig.placeholderStation
         
         setupAudioSession()
         setupRemoteCommands()
@@ -93,6 +93,16 @@ final class RadioPlayer: ObservableObject {
     
     /// Inicia la reproducción del stream actual
     func play() {
+        // Si aún no hay estación seleccionada, tomar la primera disponible del directorio si existe
+        if currentStation.isPlaceholder {
+            if let firstAvailable = RadioBrowserService.shared.state.stations.first {
+                currentStation = firstAvailable
+                artistName = firstAvailable.name
+            } else {
+                return
+            }
+        }
+        
         RecentStationsManager.shared.saveRecentStation(currentStation)
         
         guard let url = URL(string: currentStation.streamURL) else {
@@ -101,8 +111,11 @@ final class RadioPlayer: ObservableObject {
             return
         }
         
-        // Si ya está pausado el mismo playerItem, reanudar
-        if let player = player, state == .paused {
+        // Si ya está pausado el mismo playerItem con la misma URL, reanudar
+        if let player = player,
+           state == .paused,
+           let currentAsset = playerItem?.asset as? AVURLAsset,
+           currentAsset.url == url {
             state = .buffering
             player.play()
             updateNowPlayingInfo()
@@ -147,9 +160,12 @@ final class RadioPlayer: ObservableObject {
     
     /// Cambia de estación e inicia reproducción
     func switchStation(to station: RadioStation) {
+        cleanupPlayer()
+        state = .stopped
         currentStation = station
         trackTitle = "Conectando..."
         artistName = station.name
+        RecentStationsManager.shared.saveRecentStation(station)
         play()
     }
     

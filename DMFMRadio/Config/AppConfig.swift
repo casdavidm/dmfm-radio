@@ -37,19 +37,33 @@ public struct RadioStation: Identifiable, Hashable, Codable {
         self.faviconURL = faviconURL
     }
     
-    /// Frecuencia simulada de dial FM (entre 88.0 y 107.9 MHz) basada en el hash de la emisora
+    /// Indica si es una estación de estado vacío (no reproducible)
+    public var isPlaceholder: Bool {
+        id == "dmfm-placeholder" || streamURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    
+    /// Frecuencia simulada de dial FM (entre 88.0 y 107.9 MHz) estable entre arranques.
+    /// Usa FNV-1a en lugar de `hashValue`, que Swift aleatoriza en cada proceso.
     public var dialFrequency: Double {
-        let hashValue = abs(name.hashValue ^ streamURL.hashValue)
-        let step = Double(hashValue % 200) / 10.0 // 0.0 a 19.9
+        var hash: UInt64 = 0xcbf29ce484222325
+        for byte in (streamURL.isEmpty ? name : streamURL).utf8 {
+            hash ^= UInt64(byte)
+            hash = hash &* 0x100000001b3
+        }
+        let step = Double(hash % 200) / 10.0 // 0.0 a 19.9
         return 88.0 + step
     }
     
     public var dialFrequencyString: String {
-        String(format: "%.1f FM", dialFrequency)
+        if isPlaceholder {
+            return "--.- FM"
+        }
+        return String(format: "%.1f FM", dialFrequency)
     }
     
     /// URL para Deeplink hacia la app principal
     public var deeplinkURL: URL? {
+        guard !isPlaceholder else { return URL(string: "dmfm://open") }
         var components = URLComponents()
         components.scheme = "dmfm"
         components.host = "play"
@@ -76,54 +90,19 @@ public enum AppConfig {
     /// Slogan o descripción de la radio
     public static let appTagline = "Base de datos mundial de emisoras en vivo"
     
-    /// Estación predeterminada (Stream de demostración de alta disponibilidad)
-    public static let defaultStreamURL = "https://ice1.somafm.com/groovesalad-128-mp3"
+    /// Estación inicial vacía mientras el usuario selecciona una emisora real
+    public static let placeholderStation = RadioStation(
+        id: "dmfm-placeholder",
+        name: "Selecciona una emisora",
+        subtitle: "Escucha una emisora para verla aquí",
+        streamURL: "",
+        genre: "En vivo",
+        bitrate: "--- kbps",
+        country: "",
+        countryCode: "",
+        codec: "AAC"
+    )
     
-    /// Lista de estaciones iniciales / canales destacados de DM/FM
-    public static let defaultStations: [RadioStation] = [
-        RadioStation(
-            id: "dmfm-main",
-            name: "DM/FM Principal",
-            subtitle: "La mejor selección musical en vivo",
-            streamURL: "https://ice1.somafm.com/groovesalad-128-mp3",
-            genre: "Éxitos & Variedad",
-            bitrate: "128 kbps MP3",
-            country: "Mundial",
-            countryCode: "WW",
-            codec: "MP3"
-        ),
-        RadioStation(
-            id: "dmfm-hits",
-            name: "DM/FM Hits Global",
-            subtitle: "Top 40 y tendencias globales",
-            streamURL: "https://ice2.somafm.com/poptron-128-mp3",
-            genre: "Pop / Hits",
-            bitrate: "128 kbps MP3",
-            country: "Mundial",
-            countryCode: "WW",
-            codec: "MP3"
-        ),
-        RadioStation(
-            id: "dmfm-chill",
-            name: "DM/FM Lounge & Chill",
-            subtitle: "Sonidos relajantes para tu día",
-            streamURL: "https://ice4.somafm.com/secretagent-128-mp3",
-            genre: "Chillout / Downtempo",
-            bitrate: "128 kbps MP3",
-            country: "Mundial",
-            countryCode: "WW",
-            codec: "MP3"
-        ),
-        RadioStation(
-            id: "dmfm-rock",
-            name: "DM/FM Rock & Classics",
-            subtitle: "Clásicos legendarios de todos los tiempos",
-            streamURL: "https://ice6.somafm.com/7soul-128-mp3",
-            genre: "Rock & Classic Soul",
-            bitrate: "128 kbps MP3",
-            country: "Mundial",
-            countryCode: "WW",
-            codec: "MP3"
-        )
-    ]
+    /// Sin emisoras de relleno
+    public static let defaultStations: [RadioStation] = []
 }

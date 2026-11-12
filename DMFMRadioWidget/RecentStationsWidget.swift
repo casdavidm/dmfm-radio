@@ -1,37 +1,36 @@
 import WidgetKit
 import SwiftUI
+import AppIntents
 
-/// Entrada de la línea de tiempo del Widget con la lista de emisoras recientes
+/// Entrada de la línea de tiempo del Widget con la lista de emisoras recientes reales
 struct RecentStationsEntry: TimelineEntry {
     let date: Date
     let stations: [RadioStation]
     
-    var latestStation: RadioStation {
-        stations.first ?? AppConfig.defaultStations[0]
+    var latestStation: RadioStation? {
+        stations.first
     }
 }
 
-/// Proveedor de la línea de tiempo conectado a RecentStationsManager vía App Group
+/// Proveedor de la línea de tiempo conectado a RecentStationsManager vía App Group (group.casdavidm.dmfmradio)
 struct RecentStationsProvider: TimelineProvider {
     func placeholder(in context: Context) -> RecentStationsEntry {
         RecentStationsEntry(
             date: Date(),
-            stations: Array(AppConfig.defaultStations.prefix(3))
+            stations: RecentStationsManager.shared.getRecentStations()
         )
     }
 
     func getSnapshot(in context: Context, completion: @escaping (RecentStationsEntry) -> Void) {
         let stations = RecentStationsManager.shared.getRecentStations()
-        let list = stations.isEmpty ? Array(AppConfig.defaultStations.prefix(3)) : stations
-        completion(RecentStationsEntry(date: Date(), stations: list))
+        completion(RecentStationsEntry(date: Date(), stations: stations))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<RecentStationsEntry>) -> Void) {
         let stations = RecentStationsManager.shared.getRecentStations()
-        let list = stations.isEmpty ? Array(AppConfig.defaultStations.prefix(3)) : stations
-        let entry = RecentStationsEntry(date: Date(), stations: list)
+        let entry = RecentStationsEntry(date: Date(), stations: stations)
         
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 30, to: Date()) ?? Date()
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date()) ?? Date()
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
     }
@@ -45,8 +44,6 @@ struct RecentStationsWidgetEntryView: View {
     var body: some View {
         Group {
             switch family {
-            case .systemSmall:
-                SmallWidgetView(station: entry.latestStation)
             case .systemMedium:
                 MediumWidgetView(stations: Array(entry.stations.prefix(3)))
             default:
@@ -58,67 +55,154 @@ struct RecentStationsWidgetEntryView: View {
     }
 }
 
+// MARK: - Piezas compartidas del widget
+
+/// Rejilla de altavoz circular en relieve (versión ligera para WidgetKit)
+struct WidgetGrilleView: View {
+    let size: CGFloat
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color.appCard)
+                .shadow(color: Color.black.opacity(0.55), radius: size * 0.08, x: size * 0.04, y: size * 0.05)
+                .shadow(color: Color.white.opacity(0.05), radius: size * 0.05, x: -size * 0.03, y: -size * 0.03)
+            
+            VStack(spacing: 4) {
+                ForEach(0..<Int(size / 6), id: \.self) { _ in
+                    Capsule()
+                        .fill(Color.appBackground)
+                        .frame(height: 2)
+                }
+            }
+            .frame(width: size * 0.92, height: size * 0.92)
+            .clipShape(Circle())
+            
+            Circle()
+                .strokeBorder(Color.appBorder.opacity(0.7), lineWidth: 1)
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+/// Cabecera: logotipo oficial + píldora de estado
+struct WidgetHeader: View {
+    var label: String = "RECIENTES"
+    /// Versión reducida para .systemSmall
+    var compact: Bool = false
+    
+    var body: some View {
+        HStack(alignment: .center) {
+            Image("AppLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: compact ? 15 : 18)
+            
+            Spacer(minLength: 4)
+            
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(Color.appAccent)
+                    .frame(width: 5, height: 5)
+                Text(label)
+                    .font(.system(size: 8, weight: .bold))
+                    .tracking(compact ? 0.5 : 1)
+                    .foregroundColor(Color.appTextSecondary)
+                    .lineLimit(1)
+                    .fixedSize()
+            }
+            .padding(.horizontal, compact ? 6 : 8)
+            .padding(.vertical, 4)
+            .background(Capsule().fill(Color.appCard))
+            .overlay(Capsule().strokeBorder(Color.appBorder.opacity(0.7), lineWidth: 1))
+        }
+        // Separa logo y píldora de las esquinas redondeadas del widget
+        .padding(.top, 6)
+        .padding(.horizontal, 6)
+    }
+}
+
+/// Estado vacío con una rejilla y un mensaje
+struct WidgetEmptyView: View {
+    let compact: Bool
+    
+    var body: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                WidgetGrilleView(size: compact ? 44 : 56)
+                Image(systemName: "antenna.radiowaves.left.and.right")
+                    .font(.system(size: compact ? 13 : 16, weight: .semibold))
+                    .foregroundColor(Color.appAccent)
+                    .frame(width: compact ? 26 : 32, height: compact ? 26 : 32)
+                    .background(Circle().fill(Color.appBackground))
+            }
+            
+            Text("Escucha una emisora para verla aquí")
+                .font(.system(size: compact ? 11 : 13, weight: .medium))
+                .foregroundColor(Color.appTextSecondary)
+                .lineLimit(3)
+                .multilineTextAlignment(.leading)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    }
+}
+
 // MARK: - Vista para .systemSmall
 
 struct SmallWidgetView: View {
-    let station: RadioStation
+    let station: RadioStation?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header: DM / FM y badge EN VIVO
-            HStack(alignment: .center) {
-                HStack(spacing: 2) {
-                    Text("DM")
-                        .font(.system(size: 13, weight: .black))
-                        .foregroundColor(.white)
-                    Text("/")
-                        .font(.system(size: 13, weight: .black))
-                        .foregroundColor(Color.appAccent)
-                    Text("FM")
-                        .font(.system(size: 13, weight: .black))
-                        .foregroundColor(.white)
-                }
-                
-                Spacer()
-                
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(Color.appAccent)
-                        .frame(width: 6, height: 6)
-                    Text("EN VIVO")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundColor(Color.appAccent)
-                        .tracking(0.5)
-                }
-            }
+        VStack(spacing: 0) {
+            WidgetHeader(label: station == nil ? "RADIO" : "ÚLTIMA", compact: true)
             
-            Spacer()
-            
-            // Frecuencia Dial FM en Amarillo #ffc61a
-            VStack(alignment: .leading, spacing: 3) {
-                Text(station.dialFrequencyString)
-                    .font(.system(size: 22, weight: .black, design: .monospaced))
-                    .foregroundColor(Color.appAccent)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                
-                // Nombre de la emisora en blanco
-                Text(station.name)
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(Color.appTextPrimary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                
-                // País / Género / Bitrate en gris
-                Text(station.country.isEmpty ? station.genre : "\(station.country) • \(station.bitrate)")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(Color.appTextSecondary)
-                    .lineLimit(1)
+            if let station = station {
+                // Toda la zona de la emisora reproduce sin abrir la app
+                Button(intent: PlayStationIntent(station: station)) {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 4)
+                        
+                        // Rejilla con dial de sintonía
+                        ZStack {
+                            WidgetGrilleView(size: 92)
+                            TunerDialView(
+                                frequency: station.dialFrequency,
+                                stationName: "",
+                                isPlaying: false,
+                                size: 54
+                            )
+                        }
+                        
+                        Spacer(minLength: 4)
+                        
+                        // Nombre y país
+                        VStack(spacing: 1) {
+                            Text(station.name)
+                                .font(.retro(13))
+                                .foregroundColor(Color.appTextPrimary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                            
+                            Text(station.country.isEmpty ? station.bitrate : station.country.uppercased())
+                                .font(.system(size: 8, weight: .semibold))
+                                .tracking(0.8)
+                                .foregroundColor(Color.appTextSecondary)
+                                .lineLimit(1)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            } else {
+                WidgetEmptyView(compact: true)
+                    .padding(.top, 6)
             }
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .widgetURL(station.deeplinkURL)
+        .padding(12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        // Sin emisora reciente, el widget abre la app
+        .widgetURL(station == nil ? URL(string: "dmfm://open") : nil)
     }
 }
 
@@ -128,106 +212,82 @@ struct MediumWidgetView: View {
     let stations: [RadioStation]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Header superior
-            HStack(alignment: .center) {
-                HStack(spacing: 2) {
-                    Text("DM")
-                        .font(.system(size: 14, weight: .black))
-                        .foregroundColor(.white)
-                    Text("/")
-                        .font(.system(size: 14, weight: .black))
-                        .foregroundColor(Color.appAccent)
-                    Text("FM")
-                        .font(.system(size: 14, weight: .black))
-                        .foregroundColor(.white)
-                }
-                
-                Text("•")
-                    .foregroundColor(Color.appTextSecondary.opacity(0.6))
-                    .font(.system(size: 11))
-                
-                Text("EMISORAS RECIENTES")
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundColor(Color.appTextSecondary)
-                    .tracking(1)
-                
-                Spacer()
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "radio.fill")
-                        .font(.system(size: 10))
-                        .foregroundColor(Color.appAccent)
-                    Text("EN DIRECTO")
-                        .font(.system(size: 8, weight: .heavy))
-                        .foregroundColor(Color.appAccent)
-                }
-            }
+        VStack(spacing: 8) {
+            WidgetHeader(label: stations.isEmpty ? "RADIO" : "RECIENTES")
             
-            // Fila de las 3 emisoras recientes con enlaces Deeplink
-            HStack(spacing: 8) {
-                ForEach(stations.prefix(3)) { station in
-                    if let url = station.deeplinkURL {
-                        Link(destination: url) {
-                            MediumStationCard(station: station)
+            if stations.isEmpty {
+                WidgetEmptyView(compact: false)
+            } else if let latest = stations.first {
+                HStack(spacing: 12) {
+                    // Última emisora: rejilla con dial, reproduce sin abrir la app
+                    Button(intent: PlayStationIntent(station: latest)) {
+                        ZStack {
+                            WidgetGrilleView(size: 96)
+                            TunerDialView(
+                                frequency: latest.dialFrequency,
+                                stationName: "",
+                                isPlaying: false,
+                                size: 56
+                            )
                         }
-                    } else {
-                        MediumStationCard(station: station)
                     }
+                    .buttonStyle(.plain)
+                    
+                    // Lista de recientes
+                    VStack(spacing: 6) {
+                        ForEach(stations.prefix(3)) { station in
+                            Button(intent: PlayStationIntent(station: station)) {
+                                MediumStationRow(station: station, isLatest: station.id == latest.id)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
         }
         .padding(12)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
 
-// MARK: - Celda de Tarjeta de Emisora para .systemMedium
+// MARK: - Fila de emisora para .systemMedium
 
-struct MediumStationCard: View {
+struct MediumStationRow: View {
     let station: RadioStation
+    let isLatest: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            // Frecuencia Dial + Icono de reproducción
-            HStack {
-                Text(station.dialFrequencyString)
-                    .font(.system(size: 11, weight: .black, design: .monospaced))
-                    .foregroundColor(Color.appAccent)
-                    .lineLimit(1)
-                
-                Spacer(minLength: 2)
-                
-                Image(systemName: "play.fill")
-                    .font(.system(size: 7, weight: .bold))
-                    .foregroundColor(Color.appBackground)
-                    .padding(4)
-                    .background(Color.appAccent)
-                    .clipShape(Circle())
-            }
+        HStack(spacing: 8) {
+            Text(String(format: "%.1f", station.dialFrequency))
+                .font(.retro(11))
+                .monospacedDigit()
+                .foregroundColor(isLatest ? Color.appBackground : Color.appAccent)
+                .frame(width: 38, height: 22)
+                .background(Capsule().fill(isLatest ? Color.appAccent : Color.appBackground))
+            
+            Text(station.name)
+                .font(.retro(12, weight: .semibold))
+                .foregroundColor(Color.appTextPrimary)
+                .lineLimit(1)
             
             Spacer(minLength: 2)
             
-            // Nombre de la emisora en blanco
-            Text(station.name)
-                .font(.system(size: 11, weight: .bold))
-                .foregroundColor(Color.appTextPrimary)
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
-            
-            // Género o país en gris
-            Text(station.country.isEmpty ? station.genre : station.country)
-                .font(.system(size: 9, weight: .medium))
+            Image(systemName: "play.fill")
+                .font(.system(size: 8, weight: .bold))
                 .foregroundColor(Color.appTextSecondary)
-                .lineLimit(1)
         }
-        .padding(8)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .padding(.horizontal, 6)
+        .padding(.vertical, 4)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.appCard)
+                .shadow(color: Color.black.opacity(0.45), radius: 4, x: 2, y: 2)
+        )
         .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(Color.appBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.appBorder.opacity(0.7), lineWidth: 1)
         )
     }
 }

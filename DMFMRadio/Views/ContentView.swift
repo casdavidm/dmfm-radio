@@ -1,58 +1,129 @@
 import SwiftUI
 
-/// Vista principal minimalista de DM/FM Radio
+/// Vista principal de DM/FM Radio: cabecera, pestañas Inicio · Radio · Favoritos y mini-reproductor
 struct ContentView: View {
     @StateObject private var player = RadioPlayer.shared
     @StateObject private var browserService = RadioBrowserService.shared
     @StateObject private var favoritesManager = FavoritesManager.shared
-    @State private var showingFullPlayer = false
+    
+    @State private var selectedTab: AppTab = .home
+    @State private var showingNowPlaying = false
+    @State private var showingSettings = false
     
     var body: some View {
         ZStack {
-            // Fondo Azul oscuro estricto #111827
             Color.appBackground
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // MARK: - 1. Header Superior
-                headerView
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
-                    .padding(.bottom, 14)
+                // MARK: - Cabecera
+                RetroHeader(
+                    isLive: player.state.isPlaying,
+                    onMenu: { showingSettings = true },
+                    onStatus: {
+                        if player.currentStation.isPlaceholder {
+                            withAnimation { selectedTab = .radio }
+                        } else {
+                            showingNowPlaying = true
+                        }
+                    }
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                .padding(.bottom, 14)
                 
-                // MARK: - 2. Barra de Búsqueda Reactiva
-                searchBarView
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 12)
-                
-                // MARK: - 3. Píldoras de Filtro Rápido (Chips)
-                filterChipsView
-                    .padding(.bottom, 12)
-                
-                // MARK: - 4. Lista de Emisoras Minimalista
-                stationListView
-                
-                // MARK: - 5. Mini-Reproductor Persistente
-                PersistentMiniPlayerView(player: player) {
-                    showingFullPlayer = true
+                // MARK: - Contenido de la pestaña
+                Group {
+                    switch selectedTab {
+                    case .home:
+                        homeView
+                    case .radio:
+                        RadioTunerView(
+                            player: player,
+                            browserService: browserService,
+                            favoritesManager: favoritesManager,
+                            onOpenNowPlaying: { showingNowPlaying = true }
+                        )
+                    case .favorites:
+                        favoritesView
+                    }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay(alignment: .bottom) {
+                    // Desvanecido de la lista bajo el mini-reproductor
+                    if selectedTab != .radio && !player.currentStation.isPlaceholder {
+                        LinearGradient(colors: [Color.appBackground.opacity(0), Color.appBackground], startPoint: .top, endPoint: .bottom)
+                            .frame(height: 56)
+                            .allowsHitTesting(false)
+                    }
+                }
+                
+                // MARK: - Mini-reproductor (oculto en la pestaña Radio)
+                if selectedTab != .radio && !player.currentStation.isPlaceholder {
+                    PersistentMiniPlayerView(player: player) {
+                        showingNowPlaying = true
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 10)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+                
+                // MARK: - Barra de pestañas
+                RetroTabBar(selected: $selectedTab)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 6)
             }
         }
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: selectedTab)
+        .animation(.easeInOut(duration: 0.25), value: player.currentStation.isPlaceholder)
         .preferredColorScheme(.dark)
-        .sheet(isPresented: $showingFullPlayer) {
-            FullPlayerSheetView(player: player)
+        .sheet(isPresented: $showingNowPlaying) {
+            FullPlayerSheetView(
+                player: player,
+                onPrevious: { skipStation(-1) },
+                onNext: { skipStation(1) },
+                skipEnabled: skipPlaylist.count > 1
+            )
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView(player: player)
         }
         .onOpenURL { url in
             handleDeeplink(url)
         }
     }
     
-    // MARK: - Deeplink Handling
+    // MARK: - Navegación anterior / siguiente desde la hoja
+    
+    private var skipPlaylist: [RadioStation] {
+        let loaded = browserService.state.stations
+        return loaded.isEmpty ? favoritesManager.favoriteStations : loaded
+    }
+    
+    private func skipStation(_ delta: Int) {
+        let list = skipPlaylist
+        guard !list.isEmpty else { return }
+        let current = player.currentStation
+        let index = list.firstIndex { $0.id == current.id || (!current.streamURL.isEmpty && $0.streamURL == current.streamURL) }
+        let target: Int
+        if let index = index {
+            target = (index + delta + list.count) % list.count
+        } else {
+            target = delta > 0 ? 0 : list.count - 1
+        }
+        hapticTap()
+        player.switchStation(to: list[target])
+    }
+    
+    // MARK: - Deeplink
     
     private func handleDeeplink(_ url: URL) {
-        guard url.scheme == "dmfm", url.host == "play" else { return }
+        guard url.scheme == "dmfm" else { return }
+        guard url.host == "play" else {
+            withAnimation { selectedTab = .radio }
+            return
+        }
         
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
         let queryItems = components?.queryItems ?? []
@@ -67,20 +138,17 @@ struct ContentView: View {
         let countryCode = queryItems.first(where: { $0.name == "countryCode" })?.value ?? ""
         let codec = queryItems.first(where: { $0.name == "codec" })?.value ?? "MP3"
         
-        // 1. Buscar en emisoras recientes guardadas
+        let matches: (RadioStation) -> Bool = { station in
+            station.id == id || (stream != nil && !stream!.isEmpty && station.streamURL == stream)
+        }
+        
         let recents = RecentStationsManager.shared.getRecentStations()
-        if let match = recents.first(where: { $0.id == id || ($0.streamURL == stream && stream != nil && !stream!.isEmpty) }) {
+        if let match = recents.first(where: matches) ?? AppConfig.defaultStations.first(where: matches) {
             player.switchStation(to: match)
+            withAnimation { selectedTab = .radio }
             return
         }
         
-        // 2. Buscar en las predeterminadas
-        if let match = AppConfig.defaultStations.first(where: { $0.id == id || ($0.streamURL == stream && stream != nil && !stream!.isEmpty) }) {
-            player.switchStation(to: match)
-            return
-        }
-        
-        // 3. Reconstruir emisora desde parámetros
         if let stream = stream, !stream.isEmpty {
             let station = RadioStation(
                 id: id,
@@ -94,117 +162,84 @@ struct ContentView: View {
                 codec: codec
             )
             player.switchStation(to: station)
+            withAnimation { selectedTab = .radio }
         }
     }
     
-    // MARK: - Subvistas
+    // MARK: - Pestaña Inicio
     
-    /// Header superior con logotipo tipográfico DM / FM e indicador de estado
-    private var headerView: some View {
-        HStack {
-            // Logotipo oficial DM | FM
-            Image("Logo")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 28)
+    private var homeView: some View {
+        VStack(spacing: 0) {
+            searchBarView
+                .padding(.horizontal, 20)
+                .padding(.bottom, 14)
             
-            Spacer()
+            filterChipsView
+                .padding(.bottom, 6)
             
-            // Indicador de estado en vivo
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(player.state.isPlaying ? Color.appAccent : Color.appTextSecondary.opacity(0.5))
-                    .frame(width: 8, height: 8)
-                
-                Text(player.state.isPlaying ? "EN VIVO" : "EN PAUSA")
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundColor(player.state.isPlaying ? Color.appAccent : Color.appTextSecondary)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(Color.appCard)
-            .cornerRadius(8)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(player.state.isPlaying ? Color.appAccent.opacity(0.5) : Color.appBorder, lineWidth: 1)
-            )
+            stationListView
         }
     }
     
-    /// Barra de búsqueda reactiva contra la API de Radio Browser
+    /// Barra de búsqueda hundida en la superficie
     private var searchBarView: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(browserService.searchText.isEmpty ? Color.appTextSecondary : Color.appAccent)
             
-            TextField("Buscar emisora o género...", text: $browserService.searchText)
+            TextField("Buscar emisora o género…", text: $browserService.searchText)
                 .font(.system(size: 14))
                 .foregroundColor(Color.appTextPrimary)
-                .accentColor(Color.appAccent)
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
+                .tint(Color.appAccent)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
             
             if !browserService.searchText.isEmpty {
-                Button(action: {
-                    browserService.searchText = ""
-                }) {
+                Button(action: { browserService.searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 15))
                         .foregroundColor(Color.appTextSecondary)
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Borrar búsqueda")
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(Color.appCard)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.appBorder, lineWidth: 1)
-        )
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .neumorphicInset(Capsule())
     }
     
-    /// Píldoras de filtro rápido (Chips): Top Mundial, España, México, Colombia, Argentina, Favoritos
+    /// Chips de filtro rápido (Favoritos vive en su propia pestaña)
     private var filterChipsView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(CountryFilter.allCases) { filter in
+            HStack(spacing: 10) {
+                ForEach(CountryFilter.allCases.filter { $0 != .favorites }) { filter in
                     let isSelected = browserService.selectedFilter == filter
                     
                     Button(action: {
+                        hapticTap()
                         browserService.selectedFilter = filter
                     }) {
-                        HStack(spacing: 5) {
-                            if filter == .favorites {
-                                Image(systemName: "star.fill")
-                                    .font(.system(size: 11))
-                            }
-                            
-                            Text(filter.rawValue)
-                                .font(.system(size: 13, weight: isSelected ? .bold : .medium))
-                        }
-                        .foregroundColor(isSelected ? Color.appBackground : Color.appTextSecondary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
-                        .background(isSelected ? Color.appAccent : Color.appCard)
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(isSelected ? Color.appAccent : Color.appBorder, lineWidth: 1)
-                        )
+                        Text(filter.rawValue)
+                            .font(.system(size: 13, weight: isSelected ? .bold : .medium))
+                            .foregroundColor(isSelected ? Color.appBackground : Color.appTextSecondary)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 9)
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(.plain)
+                    .neumorphicRaised(Capsule(), fill: isSelected ? Color.appAccent : Color.appCard, shadowRadius: 6)
                 }
             }
             .padding(.horizontal, 20)
+            .padding(.vertical, 8)
         }
     }
     
-    /// Lista de emisoras minimalista con estados de carga y error
+    /// Lista de emisoras con estados de carga y error
     private var stationListView: some View {
         ScrollView {
-            LazyVStack(spacing: 10) {
+            LazyVStack(spacing: 14) {
                 switch browserService.state {
                 case .loading:
                     VStack(spacing: 14) {
@@ -212,7 +247,7 @@ struct ContentView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: Color.appAccent))
                             .scaleEffect(1.2)
                         
-                        Text("Sintonizando emisoras mundiales...")
+                        Text("Sintonizando emisoras mundiales…")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(Color.appTextSecondary)
                     }
@@ -220,7 +255,7 @@ struct ContentView: View {
                     .padding(.top, 40)
                     
                 case .error(let message):
-                    VStack(spacing: 12) {
+                    VStack(spacing: 14) {
                         Image(systemName: "wifi.exclamationmark")
                             .font(.system(size: 32))
                             .foregroundColor(Color.appAccent)
@@ -231,84 +266,134 @@ struct ContentView: View {
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 24)
                         
-                        Button(action: {
-                            browserService.loadCurrentSelection()
-                        }) {
+                        Button(action: { browserService.loadCurrentSelection() }) {
                             Text("Reintentar")
                                 .font(.system(size: 13, weight: .bold))
                                 .foregroundColor(Color.appBackground)
-                                .padding(.horizontal, 18)
-                                .padding(.vertical, 8)
-                                .background(Color.appAccent)
-                                .cornerRadius(8)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
                         }
+                        .buttonStyle(.plain)
+                        .neumorphicRaised(Capsule(), fill: Color.appAccent, shadowRadius: 6)
                     }
                     .padding(.top, 40)
                     
                 case .loaded(let stations):
                     if stations.isEmpty {
-                        emptyStateView
+                        emptyStateView(
+                            icon: "antenna.radiowaves.left.and.right.slash",
+                            title: "No se encontraron emisoras con streams HTTPS activos.",
+                            hint: nil
+                        )
                     } else {
                         ForEach(stations) { station in
-                            let isCurrent = player.currentStation.streamURL == station.streamURL
-                            
-                            StationCardView(
-                                station: station,
-                                isSelected: isCurrent,
-                                isPlaying: isCurrent && player.state.isPlaying,
-                                isBuffering: isCurrent && player.state.isBuffering,
-                                isFavorite: favoritesManager.isFavorite(station),
-                                onPlayTapped: {
-                                    if isCurrent {
-                                        player.togglePlayPause()
-                                    } else {
-                                        player.switchStation(to: station)
-                                    }
-                                },
-                                onFavoriteTapped: {
-                                    favoritesManager.toggleFavorite(station)
-                                }
-                            )
+                            stationCard(for: station)
                         }
                     }
                     
                 case .idle:
                     Color.clear
                         .frame(height: 1)
-                        .onAppear {
-                            browserService.loadCurrentSelection()
-                        }
+                        .onAppear { browserService.loadCurrentSelection() }
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.top, 4)
-            .padding(.bottom, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 20)
         }
     }
     
-    /// Vista de estado vacío cuando no se encuentran resultados
-    private var emptyStateView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: browserService.selectedFilter == .favorites ? "star.slash" : "antenna.radiowaves.left.and.right.slash")
-                .font(.system(size: 36))
-                .foregroundColor(Color.appTextSecondary.opacity(0.6))
+    // MARK: - Pestaña Favoritos
+    
+    private var favoritesView: some View {
+        ScrollView {
+            LazyVStack(spacing: 14) {
+                HStack {
+                    Text("TUS EMISORAS")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(2)
+                        .foregroundColor(Color.appTextSecondary)
+                    
+                    Spacer()
+                    
+                    Text("\(favoritesManager.favoriteStations.count)")
+                        .font(.retro(14))
+                        .foregroundColor(Color.appAccent)
+                }
+                .padding(.horizontal, 8)
+                .padding(.bottom, 4)
+                
+                if favoritesManager.favoriteStations.isEmpty {
+                    emptyStateView(
+                        icon: "star.slash",
+                        title: "No tienes emisoras favoritas guardadas.",
+                        hint: "Toca la estrella en cualquier emisora para agregarla aquí."
+                    )
+                } else {
+                    ForEach(favoritesManager.favoriteStations) { station in
+                        stationCard(for: station)
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .padding(.bottom, 20)
+        }
+    }
+    
+    // MARK: - Auxiliares
+    
+    private func stationCard(for station: RadioStation) -> some View {
+        let isCurrent = player.currentStation.streamURL == station.streamURL
+        
+        return StationCardView(
+            station: station,
+            isSelected: isCurrent,
+            isPlaying: isCurrent && player.state.isPlaying,
+            isBuffering: isCurrent && player.state.isBuffering,
+            isFavorite: favoritesManager.isFavorite(station),
+            onPlayTapped: {
+                hapticTap()
+                if isCurrent {
+                    player.togglePlayPause()
+                } else {
+                    player.switchStation(to: station)
+                }
+            },
+            onFavoriteTapped: {
+                hapticTap()
+                favoritesManager.toggleFavorite(station)
+            }
+        )
+    }
+    
+    private func emptyStateView(icon: String, title: String, hint: String?) -> some View {
+        VStack(spacing: 14) {
+            ZStack {
+                SpeakerGrilleView(size: 96, stripeSpacing: 5, stripeHeight: 2)
+                Image(systemName: icon)
+                    .font(.system(size: 26))
+                    .foregroundColor(Color.appTextSecondary)
+                    .frame(width: 52, height: 52)
+                    .background(Circle().fill(Color.appBackground))
+                    .overlay(Circle().strokeBorder(Color.appBorder.opacity(0.7), lineWidth: 1))
+            }
             
-            Text(browserService.selectedFilter == .favorites
-                 ? "No tienes emisoras favoritas guardadas."
-                 : "No se encontraron emisoras con streams HTTPS activos.")
+            Text(title)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(Color.appTextSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             
-            if browserService.selectedFilter == .favorites {
-                Text("Toca la estrella en cualquier emisora para agregarla a tus favoritos.")
+            if let hint = hint {
+                Text(hint)
                     .font(.system(size: 12))
                     .foregroundColor(Color.appTextSecondary.opacity(0.7))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
         }
-        .padding(.top, 50)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 40)
     }
 }
