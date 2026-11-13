@@ -34,6 +34,12 @@ public final class RecentStationsManager {
         purgeLegacyFillerStationsIfNeeded()
     }
     
+    /// `false` cuando el proceso no tiene el entitlement del App Group (firma sin perfil adecuado);
+    /// en ese caso app y widget no comparten datos.
+    public var isAppGroupAvailable: Bool {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: RecentStationsManager.appGroupID) != nil
+    }
+    
     /// Valida que una emisora sea una estación real y no de relleno
     private func isRealStation(_ station: RadioStation) -> Bool {
         guard !station.isPlaceholder else { return false }

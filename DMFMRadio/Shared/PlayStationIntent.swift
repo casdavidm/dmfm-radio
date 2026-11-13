@@ -42,3 +42,21 @@ struct PlayStationIntent: AudioPlaybackIntent {
         return .result()
     }
 }
+
+/// Alterna reproducción / pausa de la emisora actual desde la Live Activity.
+struct TogglePlaybackIntent: AudioPlaybackIntent {
+    static var title: LocalizedStringResource = "Reproducir o pausar"
+    static var description = IntentDescription("Alterna la reproducción de DM/FM Radio.")
+    
+    /// Manejador que la app registra al arrancar
+    @MainActor static var toggleHandler: (() -> Void)?
+    
+    init() {}
+    
+    func perform() async throws -> some IntentResult {
+        await MainActor.run {
+            TogglePlaybackIntent.toggleHandler?()
+        }
+        return .result()
+    }
+}

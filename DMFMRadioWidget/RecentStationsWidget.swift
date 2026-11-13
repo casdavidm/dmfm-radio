@@ -1,6 +1,7 @@
 import WidgetKit
 import SwiftUI
 import AppIntents
+import ActivityKit
 
 /// Entrada de la línea de tiempo del Widget con la lista de emisoras recientes reales
 struct RecentStationsEntry: TimelineEntry {
@@ -126,6 +127,12 @@ struct WidgetHeader: View {
 struct WidgetEmptyView: View {
     let compact: Bool
     
+    private var message: String {
+        RecentStationsManager.shared.isAppGroupAvailable
+            ? "Escucha una emisora para verla aquí"
+            : "El widget no tiene acceso al App Group. Reinstala la app con una firma que lo incluya."
+    }
+    
     var body: some View {
         HStack(spacing: 10) {
             ZStack {
@@ -137,7 +144,7 @@ struct WidgetEmptyView: View {
                     .background(Circle().fill(Color.appBackground))
             }
             
-            Text("Escucha una emisora para verla aquí")
+            Text(message)
                 .font(.system(size: compact ? 11 : 13, weight: .medium))
                 .foregroundColor(Color.appTextSecondary)
                 .lineLimit(3)
@@ -292,9 +299,179 @@ struct MediumStationRow: View {
     }
 }
 
+// MARK: - Live Activity: Dynamic Island y pantalla de bloqueo
+
+struct RadioLiveActivity: Widget {
+    var body: some WidgetConfiguration {
+        ActivityConfiguration(for: RadioActivityAttributes.self) { context in
+            LockScreenActivityView(state: context.state)
+                .activityBackgroundTint(Color.appBackground)
+                .activitySystemActionForegroundColor(Color.appAccent)
+        } dynamicIsland: { context in
+            let state = context.state
+            
+            return DynamicIsland {
+                DynamicIslandExpandedRegion(.leading) {
+                    ZStack {
+                        WidgetGrilleView(size: 56)
+                        TunerDialView(frequency: state.frequency, stationName: "", isPlaying: state.isPlaying, size: 32)
+                    }
+                    .padding(.leading, 4)
+                }
+                
+                DynamicIslandExpandedRegion(.center) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(state.stationName)
+                            .font(.retro(17))
+                            .foregroundColor(Color.appTextPrimary)
+                            .lineLimit(1)
+                        
+                        Text(state.statusText)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Color.appTextSecondary)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                
+                DynamicIslandExpandedRegion(.trailing) {
+                    ActivityPlayButton(isPlaying: state.isPlaying, isBuffering: state.isBuffering, size: 46)
+                        .padding(.trailing, 4)
+                }
+                
+                DynamicIslandExpandedRegion(.bottom) {
+                    HStack {
+                        Image("AppLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 12)
+                        
+                        Spacer()
+                        
+                        HStack(spacing: 5) {
+                            Circle()
+                                .fill(state.isPlaying || state.isBuffering ? Color.appAccent : Color.appTextSecondary.opacity(0.5))
+                                .frame(width: 6, height: 6)
+                            Text("\(state.frequencyText) FM")
+                                .font(.retro(12))
+                                .foregroundColor(Color.appAccent)
+                        }
+                    }
+                    .padding(.horizontal, 6)
+                    .padding(.top, 4)
+                }
+            } compactLeading: {
+                Text(state.frequencyText)
+                    .font(.retro(14))
+                    .monospacedDigit()
+                    .foregroundColor(Color.appTextPrimary)
+                    .padding(.leading, 4)
+            } compactTrailing: {
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(state.isPlaying || state.isBuffering ? Color.appAccent : Color.appTextSecondary.opacity(0.5))
+                        .frame(width: 6, height: 6)
+                    Text("FM")
+                        .font(.retro(13))
+                        .foregroundColor(Color.appAccent)
+                }
+                .padding(.trailing, 4)
+            } minimal: {
+                ZStack {
+                    Circle()
+                        .fill(Color.appAccent)
+                    Text("FM")
+                        .font(.retro(9))
+                        .foregroundColor(Color.appBackground)
+                }
+            }
+            .keylineTint(Color.appAccent)
+        }
+    }
+}
+
+/// Botón play / pausa amarillo que ejecuta el intent sin abrir la app
+struct ActivityPlayButton: View {
+    let isPlaying: Bool
+    let isBuffering: Bool
+    let size: CGFloat
+    
+    var body: some View {
+        Button(intent: TogglePlaybackIntent()) {
+            ZStack {
+                Circle()
+                    .fill(Color.appAccent)
+                    .shadow(color: Color.black.opacity(0.4), radius: 4, x: 2, y: 3)
+                
+                if isBuffering {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color.appBackground))
+                        .scaleEffect(0.7)
+                } else {
+                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                        .font(.system(size: size * 0.36, weight: .heavy))
+                        .foregroundColor(Color.appBackground)
+                        .offset(x: isPlaying ? 0 : size * 0.03)
+                }
+            }
+            .frame(width: size, height: size)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(isPlaying ? "Pausar" : "Reproducir")
+    }
+}
+
+/// Tarjeta de la Live Activity en la pantalla de bloqueo y en el banner
+struct LockScreenActivityView: View {
+    let state: RadioActivityAttributes.ContentState
+    
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                WidgetGrilleView(size: 66)
+                TunerDialView(frequency: state.frequency, stationName: "", isPlaying: state.isPlaying, size: 40)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Image("AppLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 12)
+                
+                Text(state.stationName)
+                    .font(.retro(18))
+                    .foregroundColor(Color.appTextPrimary)
+                    .lineLimit(1)
+                
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(state.isPlaying || state.isBuffering ? Color.appAccent : Color.appTextSecondary.opacity(0.5))
+                        .frame(width: 6, height: 6)
+                    Text(state.statusText)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Color.appTextSecondary)
+                        .lineLimit(1)
+                }
+            }
+            
+            Spacer(minLength: 6)
+            
+            ActivityPlayButton(isPlaying: state.isPlaying, isBuffering: state.isBuffering, size: 48)
+        }
+        .padding(16)
+    }
+}
+
 // MARK: - Widget Entry Point
 
 @main
+struct DMFMRadioWidgetBundle: WidgetBundle {
+    var body: some Widget {
+        RecentStationsWidget()
+        RadioLiveActivity()
+    }
+}
+
 struct RecentStationsWidget: Widget {
     let kind: String = "DMFMRadioRecentStationsWidget"
 

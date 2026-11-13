@@ -14,6 +14,14 @@ struct DMFMApp: App {
                 player.switchStation(to: station)
             }
         }
+        
+        // Play / pausa desde la Live Activity (Dynamic Island y pantalla de bloqueo)
+        TogglePlaybackIntent.toggleHandler = {
+            RadioPlayer.shared.togglePlayPause()
+        }
+        
+        // Live Activity sincronizada con el reproductor
+        LiveActivityManager.shared.start(observing: RadioPlayer.shared)
     }
     
     var body: some Scene {

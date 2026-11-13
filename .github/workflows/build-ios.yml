@@ -47,7 +47,9 @@ jobs:
 
           mkdir -p Payload
           cp -r build/Build/Products/Release-iphoneos/*.app Payload/
-          codesign --force --deep --sign - Payload/*.app
+          # Firma ad hoc conservando los entitlements (App Group) de la extensión y de la app
+          codesign --force --sign - --entitlements DMFMRadioWidget/DMFMRadioWidget.entitlements Payload/*.app/PlugIns/DMFMRadioWidget.appex
+          codesign --force --sign - --entitlements DMFMRadio/DMFMRadio.entitlements Payload/*.app
           zip -r DMFMRadio.ipa Payload
 
       - name: Upload IPA Artifact

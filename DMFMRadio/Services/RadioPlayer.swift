@@ -318,17 +318,20 @@ final class RadioPlayer: ObservableObject {
         let artwork = MPMediaItemArtwork(boundsSize: size) { _ in
             let renderer = UIGraphicsImageRenderer(size: size)
             return renderer.image { ctx in
-                UIColor(red: 0.08, green: 0.10, blue: 0.18, alpha: 1.0).setFill()
+                // Fondo #111827, anillo amarillo #ffc61a y logotipo oficial centrado
+                UIColor(red: 17/255, green: 24/255, blue: 39/255, alpha: 1).setFill()
                 ctx.fill(CGRect(origin: .zero, size: size))
                 
-                let title = "DM/FM"
-                let attrs: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.systemFont(ofSize: 42, weight: .black),
-                    .foregroundColor: UIColor.white
-                ]
-                let str = NSAttributedString(string: title, attributes: attrs)
-                let strRect = str.boundingRect(with: size, options: .usesLineFragmentOrigin, context: nil)
-                str.draw(at: CGPoint(x: (size.width - strRect.width) / 2, y: (size.height - strRect.height) / 2))
+                let ring = UIBezierPath(ovalIn: CGRect(x: 16, y: 16, width: size.width - 32, height: size.height - 32))
+                ring.lineWidth = 6
+                UIColor(red: 1, green: 198/255, blue: 26/255, alpha: 1).setStroke()
+                ring.stroke()
+                
+                if let logo = UIImage(named: "Logo") {
+                    let width: CGFloat = 180
+                    let height = width * logo.size.height / logo.size.width
+                    logo.draw(in: CGRect(x: (size.width - width) / 2, y: (size.height - height) / 2, width: width, height: height))
+                }
             }
         }
         info[MPMediaItemPropertyArtwork] = artwork
