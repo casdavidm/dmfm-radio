@@ -49,7 +49,6 @@ targets:
       - path: DMFMRadioWidget
       - path: DMFMRadio/Shared/RecentStationsManager.swift
       - path: DMFMRadio/Shared/PlayStationIntent.swift
-      - path: DMFMRadio/Shared/RadioActivityAttributes.swift
       - path: DMFMRadio/Config/AppConfig.swift
       - path: DMFMRadio/Theme/AppTheme.swift
       - path: DMFMRadio/Views/TunerDialView.swift

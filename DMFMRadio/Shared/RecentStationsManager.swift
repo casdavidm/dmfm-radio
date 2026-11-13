@@ -7,8 +7,33 @@ import WidgetKit
 public final class RecentStationsManager {
     public static let shared = RecentStationsManager()
     
-    /// Identificador del App Group compartido entre App y Widget Extension
-    public static let appGroupID = "group.casdavidm.dmfmradio"
+    /// Identificador del App Group declarado en el proyecto
+    public static let declaredAppGroupID = "group.casdavidm.dmfmradio"
+    
+    /// Identificador real del App Group con el que se firmó este proceso.
+    /// Algunas herramientas de firma (AltStore, Sideloadly, cuentas gratuitas) renombran el grupo,
+    /// por ejemplo a `group.TEAMID.casdavidm.dmfmradio`; se lee del perfil embebido para seguir funcionando.
+    public static let appGroupID: String = {
+        let fromProfile = entitledAppGroups().first { $0.contains("dmfmradio") } ?? entitledAppGroups().first
+        return fromProfile ?? declaredAppGroupID
+    }()
+    
+    /// App Groups presentes en el `embedded.mobileprovision` del bundle actual (app o extensión)
+    private static func entitledAppGroups() -> [String] {
+        guard let url = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision"),
+              let data = try? Data(contentsOf: url),
+              let start = data.range(of: Data("<?xml".utf8)),
+              let end = data.range(of: Data("</plist>".utf8)) else {
+            return []
+        }
+        let plistData = data.subdata(in: start.lowerBound..<end.upperBound)
+        guard let plist = try? PropertyListSerialization.propertyList(from: plistData, options: [], format: nil) as? [String: Any],
+              let entitlements = plist["Entitlements"] as? [String: Any],
+              let groups = entitlements["com.apple.security.application-groups"] as? [String] else {
+            return []
+        }
+        return groups
+    }
     public static let recentStationsKey = "dmfm_recent_stations_v1"
     private static let sharedFileName = "dmfm_recent_stations.json"
     

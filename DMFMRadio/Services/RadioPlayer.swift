@@ -307,9 +307,16 @@ final class RadioPlayer: ObservableObject {
     private func updateNowPlayingInfo() {
         var info = [String: Any]()
         
-        info[MPMediaItemPropertyTitle] = trackTitle.isEmpty ? currentStation.name : trackTitle
-        info[MPMediaItemPropertyArtist] = artistName.isEmpty ? AppConfig.appName : artistName
-        info[MPMediaItemPropertyAlbumTitle] = currentStation.name
+        // Título: canción real si la hay; si no, la emisora. Subtítulo: emisora o estado.
+        let placeholderTitles: Set<String> = ["", "Conectando...", "Transmisión en directo"]
+        let hasSong = !placeholderTitles.contains(trackTitle)
+        info[MPMediaItemPropertyTitle] = hasSong ? trackTitle : currentStation.name
+        if hasSong {
+            info[MPMediaItemPropertyArtist] = currentStation.name
+        } else {
+            info[MPMediaItemPropertyArtist] = state.isBuffering ? "Conectando…" : "\(AppConfig.appName) · En vivo"
+        }
+        info[MPMediaItemPropertyAlbumTitle] = AppConfig.appName
         info[MPNowPlayingInfoPropertyIsLiveStream] = true
         info[MPNowPlayingInfoPropertyPlaybackRate] = (state == .playing) ? 1.0 : 0.0
         

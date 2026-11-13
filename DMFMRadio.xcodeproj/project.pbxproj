@@ -9,9 +9,6 @@
 /* Begin PBXBuildFile section */
 		05759DA0848964691EC89B25 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A1757A70D6741916E5DE1C /* AppTheme.swift */; };
 		1A7107CCA38267D0A71726DB /* RecentStationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6209176E2611AB3E96786C /* RecentStationsManager.swift */; };
-		9E3A6F5B2C4D7E81F6A82C35 /* RadioActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2F5E4A1B3C6D70E5F71B24 /* RadioActivityAttributes.swift */; };
-		AF4B7A6C3D5E8F92A7B93D46 /* RadioActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2F5E4A1B3C6D70E5F71B24 /* RadioActivityAttributes.swift */; };
-		C16D9C8E5F7AABB4C9DB5F68 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B05C8B7D4E6F9AA3B8CA4E57 /* LiveActivityManager.swift */; };
 		5B9D3C2E7F1A4B80C3D5F902 /* PlayStationIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F8E2A1C5D7B4960A2C4E8F1 /* PlayStationIntent.swift */; };
 		6C0E4D3F8A2B5C91D4E60A13 /* PlayStationIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F8E2A1C5D7B4960A2C4E8F1 /* PlayStationIntent.swift */; };
 		1E8A595F3F2F84E0EE34660B /* StationCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B093494A0E0DB1ABAFCF233 /* StationCardView.swift */; };
@@ -75,8 +72,6 @@
 		69727D051157B996B65E1219 /* TunerDialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerDialView.swift; sourceTree = "<group>"; };
 		6B07531C6B9B1026D8BCB9EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6D6209176E2611AB3E96786C /* RecentStationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentStationsManager.swift; sourceTree = "<group>"; };
-		8D2F5E4A1B3C6D70E5F71B24 /* RadioActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioActivityAttributes.swift; sourceTree = "<group>"; };
-		B05C8B7D4E6F9AA3B8CA4E57 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
 		3F8E2A1C5D7B4960A2C4E8F1 /* PlayStationIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayStationIntent.swift; sourceTree = "<group>"; };
 		84C6E3DB6DE23D3BBB43816E /* RetroComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroComponents.swift; sourceTree = "<group>"; };
 		8B093494A0E0DB1ABAFCF233 /* StationCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationCardView.swift; sourceTree = "<group>"; };
@@ -117,7 +112,6 @@
 			children = (
 				5A5AC1002536DD2A62575903 /* FavoritesManager.swift */,
 				48A86D5373B037B90A1270E1 /* RadioBrowserService.swift */,
-				B05C8B7D4E6F9AA3B8CA4E57 /* LiveActivityManager.swift */,
 				FC82F302BEF2EFE369C2205E /* RadioPlayer.swift */,
 			);
 			path = Services;
@@ -166,7 +160,6 @@
 			isa = PBXGroup;
 			children = (
 				3F8E2A1C5D7B4960A2C4E8F1 /* PlayStationIntent.swift */,
-				8D2F5E4A1B3C6D70E5F71B24 /* RadioActivityAttributes.swift */,
 				6D6209176E2611AB3E96786C /* RecentStationsManager.swift */,
 			);
 			path = Shared;
@@ -302,8 +295,6 @@
 				259644CDC103A822C29EFE5E /* RadioBrowserService.swift in Sources */,
 				9CA6A74408ACDA1186FFE7BE /* RadioPlayer.swift in Sources */,
 				5B9D3C2E7F1A4B80C3D5F902 /* PlayStationIntent.swift in Sources */,
-				9E3A6F5B2C4D7E81F6A82C35 /* RadioActivityAttributes.swift in Sources */,
-				C16D9C8E5F7AABB4C9DB5F68 /* LiveActivityManager.swift in Sources */,
 				391BEC56675F1DE9142EFFCE /* RecentStationsManager.swift in Sources */,
 				B1ED3EC54AB5D166B0E45CF5 /* SettingsView.swift in Sources */,
 				1E8A595F3F2F84E0EE34660B /* StationCardView.swift in Sources */,
@@ -320,7 +311,6 @@
 				05759DA0848964691EC89B25 /* AppTheme.swift in Sources */,
 				7D1A4C2E9B3F5E6A8C0D1F24 /* TunerDialView.swift in Sources */,
 				6C0E4D3F8A2B5C91D4E60A13 /* PlayStationIntent.swift in Sources */,
-				AF4B7A6C3D5E8F92A7B93D46 /* RadioActivityAttributes.swift in Sources */,
 				1A7107CCA38267D0A71726DB /* RecentStationsManager.swift in Sources */,
 				B4D40418F1A766C7D9EDF152 /* RecentStationsWidget.swift in Sources */,
 			);
