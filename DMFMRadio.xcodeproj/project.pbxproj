@@ -20,6 +20,7 @@
 		73BA542B4AE066BBD93840E6 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A1757A70D6741916E5DE1C /* AppTheme.swift */; };
 		74DC44E13071A6FC7FEAA5C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3CAB3023E150D324895924AF /* Assets.xcassets */; };
 		9CA6A74408ACDA1186FFE7BE /* RadioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC82F302BEF2EFE369C2205E /* RadioPlayer.swift */; };
+		E38FBEA07B9CCDD6EBFD7B8A /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27EAD9F6A8BBCC5DAEC6A79 /* CarPlaySceneDelegate.swift */; };
 		A2CCADC9A8EAB4C7739DC644 /* RetroComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C6E3DB6DE23D3BBB43816E /* RetroComponents.swift */; };
 		A4EDB442CA21B40ADFFFFEED /* RadioTunerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FE6D0109669E1F6DA5A7DA0 /* RadioTunerView.swift */; };
 		B1ED3EC54AB5D166B0E45CF5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1AB3CAC78B5A1F08EC6C102 /* SettingsView.swift */; };
@@ -84,6 +85,7 @@
 		D6A8859D4814237528137C48 /* DMFMApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DMFMApp.swift; sourceTree = "<group>"; };
 		ED87F852CDB6FD4C5B847307 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		FC82F302BEF2EFE369C2205E /* RadioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioPlayer.swift; sourceTree = "<group>"; };
+		D27EAD9F6A8BBCC5DAEC6A79 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -112,6 +114,7 @@
 			children = (
 				5A5AC1002536DD2A62575903 /* FavoritesManager.swift */,
 				48A86D5373B037B90A1270E1 /* RadioBrowserService.swift */,
+				D27EAD9F6A8BBCC5DAEC6A79 /* CarPlaySceneDelegate.swift */,
 				FC82F302BEF2EFE369C2205E /* RadioPlayer.swift */,
 			);
 			path = Services;
@@ -293,6 +296,7 @@
 				61E1534EB2DB1CDADB7B2E4B /* PersistentMiniPlayerView.swift in Sources */,
 				A4EDB442CA21B40ADFFFFEED /* RadioTunerView.swift in Sources */,
 				259644CDC103A822C29EFE5E /* RadioBrowserService.swift in Sources */,
+				E38FBEA07B9CCDD6EBFD7B8A /* CarPlaySceneDelegate.swift in Sources */,
 				9CA6A74408ACDA1186FFE7BE /* RadioPlayer.swift in Sources */,
 				5B9D3C2E7F1A4B80C3D5F902 /* PlayStationIntent.swift in Sources */,
 				391BEC56675F1DE9142EFFCE /* RecentStationsManager.swift in Sources */,

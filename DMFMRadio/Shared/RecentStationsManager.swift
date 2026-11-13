@@ -1,4 +1,5 @@
 import Foundation
+import Security
 #if canImport(WidgetKit)
 import WidgetKit
 #endif
@@ -9,31 +10,6 @@ public final class RecentStationsManager {
     
     /// Identificador del App Group declarado en el proyecto
     public static let declaredAppGroupID = "group.casdavidm.dmfmradio"
-    
-    /// Identificador real del App Group con el que se firmó este proceso.
-    /// Algunas herramientas de firma (AltStore, Sideloadly, cuentas gratuitas) renombran el grupo,
-    /// por ejemplo a `group.TEAMID.casdavidm.dmfmradio`; se lee del perfil embebido para seguir funcionando.
-    public static let appGroupID: String = {
-        let fromProfile = entitledAppGroups().first { $0.contains("dmfmradio") } ?? entitledAppGroups().first
-        return fromProfile ?? declaredAppGroupID
-    }()
-    
-    /// App Groups presentes en el `embedded.mobileprovision` del bundle actual (app o extensión)
-    private static func entitledAppGroups() -> [String] {
-        guard let url = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision"),
-              let data = try? Data(contentsOf: url),
-              let start = data.range(of: Data("<?xml".utf8)),
-              let end = data.range(of: Data("</plist>".utf8)) else {
-            return []
-        }
-        let plistData = data.subdata(in: start.lowerBound..<end.upperBound)
-        guard let plist = try? PropertyListSerialization.propertyList(from: plistData, options: [], format: nil) as? [String: Any],
-              let entitlements = plist["Entitlements"] as? [String: Any],
-              let groups = entitlements["com.apple.security.application-groups"] as? [String] else {
-            return []
-        }
-        return groups
-    }
     public static let recentStationsKey = "dmfm_recent_stations_v1"
     private static let sharedFileName = "dmfm_recent_stations.json"
     
@@ -44,6 +20,82 @@ public final class RecentStationsManager {
     private static let legacyFillerNames: Set<String> = [
         "DM/FM Principal", "DM/FM Hits Global", "DM/FM Lounge & Chill", "DM/FM Rock & Classics", "Selecciona una emisora"
     ]
+    
+    /// Identificador real del App Group con el que se firmó este proceso.
+    /// Algunas herramientas de firma (AltStore, Sideloadly, cuentas gratuitas) renombran el grupo,
+    /// por ejemplo a `group.TEAMID.casdavidm.dmfmradio`; se lee del perfil embebido para seguir funcionando.
+    public static let appGroupID: String = {
+        let groups = (profileEntitlements["com.apple.security.application-groups"] as? [String]) ?? []
+        return groups.first { $0.contains("dmfmradio") } ?? groups.first ?? declaredAppGroupID
+    }()
+    
+    /// Grupo de acceso al llavero compartido entre app y widget.
+    /// Los perfiles de desarrollo (también los de cuentas gratuitas) conceden `TEAMID.*`,
+    /// así que ambos procesos pueden leer y escribir este grupo aunque no exista App Group.
+    private static let keychainAccessGroup: String? = {
+        guard let team = teamIdentifier else { return nil }
+        return "\(team).com.casdavidm.dmfmradio.shared"
+    }()
+    
+    private static let keychainService = "com.casdavidm.dmfmradio.recent-stations"
+    
+    /// Identificador de equipo con el que se firmó este bundle
+    private static let teamIdentifier: String? = {
+        if let team = profileEntitlements["com.apple.developer.team-identifier"] as? String, !team.isEmpty {
+            return team
+        }
+        if let teams = embeddedProfile["TeamIdentifier"] as? [String], let first = teams.first, !first.isEmpty {
+            return first
+        }
+        return nil
+    }()
+    
+    private static var profileEntitlements: [String: Any] {
+        (embeddedProfile["Entitlements"] as? [String: Any]) ?? [:]
+    }
+    
+    /// Contenido del `embedded.mobileprovision` del bundle actual (app o extensión); vacío en simulador
+    private static let embeddedProfile: [String: Any] = {
+        guard let url = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision"),
+              let data = try? Data(contentsOf: url),
+              let start = data.range(of: Data("<?xml".utf8)),
+              let end = data.range(of: Data("</plist>".utf8)) else {
+            return [:]
+        }
+        let plistData = data.subdata(in: start.lowerBound..<end.upperBound)
+        return (try? PropertyListSerialization.propertyList(from: plistData, options: [], format: nil) as? [String: Any]) ?? [:]
+    }()
+    
+    // MARK: - Llavero compartido
+    
+    private func keychainQuery() -> [String: Any] {
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: RecentStationsManager.keychainService,
+            kSecAttrAccount as String: "recents"
+        ]
+        if let group = RecentStationsManager.keychainAccessGroup {
+            query[kSecAttrAccessGroup as String] = group
+        }
+        return query
+    }
+    
+    private func writeKeychain(_ data: Data) {
+        var query = keychainQuery()
+        SecItemDelete(query as CFDictionary)
+        query[kSecValueData as String] = data
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+        SecItemAdd(query as CFDictionary, nil)
+    }
+    
+    private func readKeychain() -> Data? {
+        var query = keychainQuery()
+        query[kSecReturnData as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        var result: CFTypeRef?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
+        return result as? Data
+    }
     
     private var sharedDefaults: UserDefaults? {
         UserDefaults(suiteName: RecentStationsManager.appGroupID)
@@ -99,6 +151,8 @@ public final class RecentStationsManager {
         if let fileURL = sharedContainerFileURL {
             try? data.write(to: fileURL, options: .atomic)
         }
+        
+        writeKeychain(data)
     }
     
     /// Guarda la emisora reproducida al inicio de la lista de recientes (sin duplicados, máx. 5) y recarga los widgets de inmediato
@@ -137,6 +191,15 @@ public final class RecentStationsManager {
         
         if let fileURL = sharedContainerFileURL,
            let data = try? Data(contentsOf: fileURL),
+           let list = try? JSONDecoder().decode([RadioStation].self, from: data) {
+            let realStations = list.filter { isRealStation($0) }
+            if !realStations.isEmpty {
+                return realStations
+            }
+        }
+        
+        // Sin App Group: el llavero compartido por equipo es la única vía entre app y widget
+        if let data = readKeychain(),
            let list = try? JSONDecoder().decode([RadioStation].self, from: data) {
             let realStations = list.filter { isRealStation($0) }
             if !realStations.isEmpty {

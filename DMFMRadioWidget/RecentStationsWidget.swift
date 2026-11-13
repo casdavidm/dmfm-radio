@@ -122,45 +122,27 @@ struct WidgetHeader: View {
     }
 }
 
-/// Estado vacío: invita a escuchar o, si la firma no incluye el App Group,
-/// se convierte en un lanzador de la app con el dial en reposo.
+/// Estado vacío: lanzador con el dial en reposo e invitación a escuchar
 struct WidgetEmptyView: View {
     let compact: Bool
-    
-    private var hasAppGroup: Bool { RecentStationsManager.shared.isAppGroupAvailable }
     
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
                 WidgetGrilleView(size: compact ? 50 : 64)
-                if hasAppGroup {
-                    Image(systemName: "antenna.radiowaves.left.and.right")
-                        .font(.system(size: compact ? 13 : 16, weight: .semibold))
-                        .foregroundColor(Color.appAccent)
-                        .frame(width: compact ? 26 : 32, height: compact ? 26 : 32)
-                        .background(Circle().fill(Color.appBackground))
-                } else {
-                    TunerDialView(frequency: nil, stationName: "", isPlaying: false, size: compact ? 30 : 38)
-                }
+                TunerDialView(frequency: nil, stationName: "", isPlaying: false, size: compact ? 30 : 38)
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                if hasAppGroup {
-                    Text("Escucha una emisora para verla aquí")
-                        .font(.system(size: compact ? 11 : 13, weight: .medium))
-                        .foregroundColor(Color.appTextSecondary)
-                        .lineLimit(3)
-                } else {
-                    Text("Toca para abrir la radio")
-                        .font(.retro(compact ? 14 : 16))
-                        .foregroundColor(Color.appTextPrimary)
-                        .lineLimit(1)
-                    
-                    Text("Las recientes necesitan una firma con App Group")
-                        .font(.system(size: compact ? 9 : 11, weight: .medium))
-                        .foregroundColor(Color.appTextSecondary)
-                        .lineLimit(2)
-                }
+                Text("Toca para abrir la radio")
+                    .font(.retro(compact ? 14 : 16))
+                    .foregroundColor(Color.appTextPrimary)
+                    .lineLimit(1)
+                
+                Text("Escucha una emisora para verla aquí")
+                    .font(.system(size: compact ? 9 : 11, weight: .medium))
+                    .foregroundColor(Color.appTextSecondary)
+                    .lineLimit(2)
             }
             .multilineTextAlignment(.leading)
         }

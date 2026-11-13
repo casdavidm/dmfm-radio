@@ -388,12 +388,29 @@ final class RadioPlayer: ObservableObject {
                   let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
                   let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
             
-            if reason == .oldDeviceUnavailable {
+            switch reason {
+            case .oldDeviceUnavailable:
                 Task { @MainActor [weak self] in
                     self?.pause()
                 }
+            case .newDeviceAvailable:
+                // Al conectar el teléfono al coche, retomar la última emisora
+                let isCar = AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .carAudio }
+                if isCar {
+                    Task { @MainActor [weak self] in
+                        self?.resumeLastStationIfIdle()
+                    }
+                }
+            default:
+                break
             }
         }
+    }
+    
+    /// Reanuda la última emisora real si no hay nada sonando (CarPlay, Bluetooth del coche)
+    func resumeLastStationIfIdle() {
+        guard !currentStation.isPlaceholder, !state.isPlaying, !state.isBuffering else { return }
+        play()
     }
 }
 
