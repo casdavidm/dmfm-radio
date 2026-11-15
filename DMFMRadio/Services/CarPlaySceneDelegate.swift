@@ -42,16 +42,16 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
         
         var sections: [CPListSection] = []
         if !recents.isEmpty {
-            sections.append(CPListSection(items: recents.map(listItem), header: "Recientes", sectionIndexTitle: nil))
+            sections.append(CPListSection(items: recents.map(listItem), header: "Recent", sectionIndexTitle: nil))
         }
         if !favorites.isEmpty {
-            sections.append(CPListSection(items: favorites.map(listItem), header: "Favoritos", sectionIndexTitle: nil))
+            sections.append(CPListSection(items: favorites.map(listItem), header: "Favorites", sectionIndexTitle: nil))
         }
         if !top.isEmpty {
-            sections.append(CPListSection(items: top.map(listItem), header: "Top mundial", sectionIndexTitle: nil))
+            sections.append(CPListSection(items: top.map(listItem), header: "Top Worldwide", sectionIndexTitle: nil))
         }
         if sections.isEmpty {
-            let empty = CPListItem(text: "Sin emisoras todavía", detailText: "Escucha una emisora en el iPhone para verla aquí")
+            let empty = CPListItem(text: "No stations yet", detailText: "Play a station on your iPhone to see it here")
             sections = [CPListSection(items: [empty])]
         }
         

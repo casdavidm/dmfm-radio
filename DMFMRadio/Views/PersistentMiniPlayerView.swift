@@ -63,7 +63,7 @@ struct PersistentMiniPlayerView: View {
                     .fill(Color.appBackground)
                     .shadow(color: Color.black.opacity(0.35), radius: 6, x: 3, y: 3)
             )
-            .accessibilityLabel(player.state.isPlaying ? "Pausar" : "Reproducir")
+            .accessibilityLabel(player.state.isPlaying ? "Pause" : "Play")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
@@ -80,10 +80,10 @@ struct PersistentMiniPlayerView: View {
     }
     
     private var statusText: String {
-        if player.state.isBuffering { return "Sintonizando señal…" }
+        if player.state.isBuffering { return "Tuning in…" }
         if player.state.isPlaying {
             return player.trackTitle.isEmpty ? station.subtitle : player.trackTitle
         }
-        return player.state == .paused ? "En pausa" : "Listo para reproducir"
+        return player.state == .paused ? "Paused" : "Ready to play"
     }
 }

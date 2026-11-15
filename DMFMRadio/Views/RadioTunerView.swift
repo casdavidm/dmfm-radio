@@ -31,7 +31,7 @@ struct RadioTunerView: View {
             VStack(spacing: 0) {
                 // MARK: - Estado
                 HStack {
-                    Text("AHORA SUENA")
+                    Text("NOW PLAYING")
                         .font(.system(size: 11, weight: .semibold))
                         .tracking(2)
                         .foregroundColor(Color.appTextSecondary)
@@ -52,7 +52,7 @@ struct RadioTunerView: View {
                         
                         TunerDialView(
                             frequency: station.isPlaceholder ? nil : station.dialFrequency,
-                            stationName: station.isPlaceholder ? "Elige una emisora" : station.name,
+                            stationName: station.isPlaceholder ? "Pick a station" : station.name,
                             isPlaying: player.state.isPlaying,
                             size: grilleSize * 0.56
                         )
@@ -60,13 +60,13 @@ struct RadioTunerView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(station.isPlaceholder)
-                .accessibilityHint("Abre la vista de reproducción")
+                .accessibilityHint("Opens the player")
                 
                 Spacer(minLength: 12)
                 
                 // MARK: - Información
                 VStack(spacing: 5) {
-                    Text(station.isPlaceholder ? "Sin emisora seleccionada" : station.name)
+                    Text(station.isPlaceholder ? "No station selected" : station.name)
                         .font(.retro(22))
                         .foregroundColor(Color.appTextPrimary)
                         .lineLimit(1)
@@ -101,8 +101,8 @@ struct RadioTunerView: View {
     }
     
     private var subtitleText: String {
-        if station.isPlaceholder { return "Explora emisoras en Inicio" }
-        if player.state.isBuffering { return "Sintonizando señal…" }
+        if station.isPlaceholder { return "Browse stations on Home" }
+        if player.state.isBuffering { return "Tuning in…" }
         if player.state.isPlaying && !player.trackTitle.isEmpty { return player.trackTitle }
         let parts = [station.country, station.genre].filter { !$0.isEmpty }
         return parts.joined(separator: " · ")
@@ -140,7 +140,7 @@ struct PlayerControlsView: View {
                 .frame(width: 236, height: 64)
             
             HStack(spacing: 0) {
-                sideButton(icon: "backward.fill", action: onPrevious, label: "Emisora anterior")
+                sideButton(icon: "backward.fill", action: onPrevious, label: "Previous station")
                 
                 Spacer()
                 
@@ -166,11 +166,11 @@ struct PlayerControlsView: View {
                 .neumorphicRaised(Circle(), fill: Color.appAccent, shadowRadius: 12)
                 .disabled(player.currentStation.isPlaceholder)
                 .opacity(player.currentStation.isPlaceholder ? 0.5 : 1)
-                .accessibilityLabel(player.state.isPlaying ? "Pausar" : "Reproducir")
+                .accessibilityLabel(player.state.isPlaying ? "Pause" : "Play")
                 
                 Spacer()
                 
-                sideButton(icon: "forward.fill", action: onNext, label: "Emisora siguiente")
+                sideButton(icon: "forward.fill", action: onNext, label: "Next station")
             }
             .frame(width: 290)
         }
@@ -208,7 +208,7 @@ struct RetroVolumeSlider: View {
                     .frame(width: 28, height: 28)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Bajar volumen")
+            .accessibilityLabel("Volume down")
             
             GeometryReader { geo in
                 let width = geo.size.width
@@ -250,10 +250,10 @@ struct RetroVolumeSlider: View {
                     .frame(width: 28, height: 28)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Subir volumen")
+            .accessibilityLabel("Volume up")
         }
         .accessibilityElement(children: .contain)
-        .accessibilityValue("\(Int(level * 100)) por ciento")
+        .accessibilityValue("\(Int(level * 100)) percent")
     }
     
     private func adjust(_ delta: Float) {

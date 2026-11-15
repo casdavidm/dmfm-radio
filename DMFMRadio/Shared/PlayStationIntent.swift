@@ -10,11 +10,11 @@ import Foundation
 /// Este archivo se compila en la app y en la extensión del widget. Solo la app
 /// registra `playHandler`; en la extensión permanece `nil` y `perform()` no hace nada.
 struct PlayStationIntent: AudioPlaybackIntent {
-    static var title: LocalizedStringResource = "Reproducir emisora"
-    static var description = IntentDescription("Sintoniza una emisora reciente de DM/FM Radio sin abrir la app.")
+    static var title: LocalizedStringResource = "Play Station"
+    static var description = IntentDescription("Tunes a recent DM/FM Radio station without opening the app.")
     
     /// Emisora codificada en JSON para atravesar el límite entre procesos
-    @Parameter(title: "Emisora")
+    @Parameter(title: "Station")
     var stationJSON: String
     
     /// Manejador que la app registra al arrancar

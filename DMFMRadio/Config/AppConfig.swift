@@ -18,7 +18,7 @@ public struct RadioStation: Identifiable, Hashable, Codable {
         name: String,
         subtitle: String = "",
         streamURL: String,
-        genre: String = "En vivo",
+        genre: String = "Live",
         bitrate: String = "128 kbps",
         country: String = "",
         countryCode: String = "",
@@ -27,7 +27,7 @@ public struct RadioStation: Identifiable, Hashable, Codable {
     ) {
         self.id = id ?? streamURL
         self.name = name
-        self.subtitle = subtitle.isEmpty ? (country.isEmpty ? "Radio en Vivo" : country) : subtitle
+        self.subtitle = subtitle.isEmpty ? (country.isEmpty ? "Live Radio" : country) : subtitle
         self.streamURL = streamURL
         self.genre = genre
         self.bitrate = bitrate
@@ -88,15 +88,15 @@ public enum AppConfig {
     public static let appName = "DM/FM Radio"
     
     /// Slogan o descripción de la radio
-    public static let appTagline = "Base de datos mundial de emisoras en vivo"
+    public static let appTagline = "Worldwide live radio station directory"
     
     /// Estación inicial vacía mientras el usuario selecciona una emisora real
     public static let placeholderStation = RadioStation(
         id: "dmfm-placeholder",
-        name: "Selecciona una emisora",
-        subtitle: "Escucha una emisora para verla aquí",
+        name: "Select a station",
+        subtitle: "Play a station to see it here",
         streamURL: "",
-        genre: "En vivo",
+        genre: "Live",
         bitrate: "--- kbps",
         country: "",
         countryCode: "",

@@ -31,7 +31,7 @@ final class RadioPlayer: ObservableObject {
     // MARK: - Published Properties
     @Published private(set) var state: PlayerState = .stopped
     @Published var currentStation: RadioStation
-    @Published private(set) var trackTitle: String = "Transmisión en directo"
+    @Published private(set) var trackTitle: String = "Live broadcast"
     @Published private(set) var artistName: String = AppConfig.appName
     @Published var volume: Float = 1.0 {
         didSet {
@@ -73,7 +73,7 @@ final class RadioPlayer: ObservableObject {
             try session.setCategory(.playback, mode: .default, options: [])
             try session.setActive(true)
         } catch {
-            print("Error configurando AVAudioSession: \(error.localizedDescription)")
+            print("Could not configure AVAudioSession: \(error.localizedDescription)")
         }
     }
     
@@ -106,8 +106,8 @@ final class RadioPlayer: ObservableObject {
         RecentStationsManager.shared.saveRecentStation(currentStation)
         
         guard let url = URL(string: currentStation.streamURL) else {
-            self.state = .error("URL de stream inválida: \(currentStation.streamURL)")
-            self.errorMessage = "URL de stream inválida"
+            self.state = .error("Invalid stream URL: \(currentStation.streamURL)")
+            self.errorMessage = "Invalid stream URL"
             return
         }
         
@@ -163,7 +163,7 @@ final class RadioPlayer: ObservableObject {
         cleanupPlayer()
         state = .stopped
         currentStation = station
-        trackTitle = "Conectando..."
+        trackTitle = "Connecting…"
         artistName = station.name
         RecentStationsManager.shared.saveRecentStation(station)
         play()
@@ -173,11 +173,11 @@ final class RadioPlayer: ObservableObject {
     func setCustomStreamURL(_ urlString: String) {
         let cleanURL = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
         currentStation = RadioStation(
-            name: "DM/FM Personalizada",
-            subtitle: "Stream personalizado",
+            name: "DM/FM Custom",
+            subtitle: "Custom stream",
             streamURL: cleanURL,
-            genre: "Personalizado",
-            bitrate: "Stream en vivo"
+            genre: "Custom",
+            bitrate: "Live stream"
         )
         play()
     }
@@ -193,7 +193,7 @@ final class RadioPlayer: ObservableObject {
                         self.state = .playing
                     }
                 case .failed:
-                    let err = item.error?.localizedDescription ?? "Error al cargar el stream"
+                    let err = item.error?.localizedDescription ?? "Could not load the stream"
                     self.state = .error(err)
                     self.errorMessage = err
                 case .unknown:
@@ -308,13 +308,13 @@ final class RadioPlayer: ObservableObject {
         var info = [String: Any]()
         
         // Título: canción real si la hay; si no, la emisora. Subtítulo: emisora o estado.
-        let placeholderTitles: Set<String> = ["", "Conectando...", "Transmisión en directo"]
+        let placeholderTitles: Set<String> = ["", "Connecting…", "Live broadcast"]
         let hasSong = !placeholderTitles.contains(trackTitle)
         info[MPMediaItemPropertyTitle] = hasSong ? trackTitle : currentStation.name
         if hasSong {
             info[MPMediaItemPropertyArtist] = currentStation.name
         } else {
-            info[MPMediaItemPropertyArtist] = state.isBuffering ? "Conectando…" : "\(AppConfig.appName) · En vivo"
+            info[MPMediaItemPropertyArtist] = state.isBuffering ? "Connecting…" : "\(AppConfig.appName) · Live"
         }
         info[MPMediaItemPropertyAlbumTitle] = AppConfig.appName
         info[MPNowPlayingInfoPropertyIsLiveStream] = true

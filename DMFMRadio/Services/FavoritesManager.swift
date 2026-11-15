@@ -32,7 +32,7 @@ final class FavoritesManager: ObservableObject {
             let data = try JSONEncoder().encode(favoriteStations)
             UserDefaults.standard.set(data, forKey: userDefaultsKey)
         } catch {
-            print("Error guardando favoritos: \(error.localizedDescription)")
+            print("Could not save favorites: \(error.localizedDescription)")
         }
     }
     
@@ -46,7 +46,7 @@ final class FavoritesManager: ObservableObject {
             let decoded = try JSONDecoder().decode([RadioStation].self, from: data)
             self.favoriteStations = decoded.filter { !fillerIDs.contains($0.id) && !$0.isPlaceholder }
         } catch {
-            print("Error cargando favoritos: \(error.localizedDescription)")
+            print("Could not load favorites: \(error.localizedDescription)")
             self.favoriteStations = []
         }
     }

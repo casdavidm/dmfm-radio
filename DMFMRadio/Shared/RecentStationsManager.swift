@@ -18,7 +18,7 @@ public final class RecentStationsManager {
         "dmfm-main", "dmfm-hits", "dmfm-chill", "dmfm-rock", "dmfm-placeholder"
     ]
     private static let legacyFillerNames: Set<String> = [
-        "DM/FM Principal", "DM/FM Hits Global", "DM/FM Lounge & Chill", "DM/FM Rock & Classics", "Selecciona una emisora"
+        "DM/FM Principal", "DM/FM Hits Global", "DM/FM Lounge & Chill", "DM/FM Rock & Classics", "Selecciona una emisora", "Select a station"
     ]
     
     /// Identificador real del App Group con el que se firmó este proceso.

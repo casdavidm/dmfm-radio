@@ -87,7 +87,7 @@ struct WidgetGrilleView: View {
 
 /// Cabecera: logotipo oficial + píldora de estado
 struct WidgetHeader: View {
-    var label: String = "RECIENTES"
+    var label: String = "RECENT"
     /// Versión reducida para .systemSmall
     var compact: Bool = false
     
@@ -134,12 +134,12 @@ struct WidgetEmptyView: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Toca para abrir la radio")
+                Text("Tap to open the radio")
                     .font(.retro(compact ? 14 : 16))
                     .foregroundColor(Color.appTextPrimary)
                     .lineLimit(1)
                 
-                Text("Escucha una emisora para verla aquí")
+                Text("Play a station to see it here")
                     .font(.system(size: compact ? 9 : 11, weight: .medium))
                     .foregroundColor(Color.appTextSecondary)
                     .lineLimit(2)
@@ -157,7 +157,7 @@ struct SmallWidgetView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            WidgetHeader(label: station == nil ? "RADIO" : "ÚLTIMA", compact: true)
+            WidgetHeader(label: station == nil ? "RADIO" : "LATEST", compact: true)
             
             if let station = station {
                 // Toda la zona de la emisora reproduce sin abrir la app
@@ -216,7 +216,7 @@ struct MediumWidgetView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            WidgetHeader(label: stations.isEmpty ? "RADIO" : "RECIENTES")
+            WidgetHeader(label: stations.isEmpty ? "RADIO" : "RECENT")
             
             if stations.isEmpty {
                 WidgetEmptyView(compact: false)
@@ -306,7 +306,7 @@ struct RecentStationsWidget: Widget {
             RecentStationsWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("DM/FM Radio")
-        .description("Acceso rápido y sintonización de tus emisoras recientes.")
+        .description("Quick access to your recent stations.")
         .supportedFamilies([.systemSmall, .systemMedium])
         .contentMarginsDisabled()
     }

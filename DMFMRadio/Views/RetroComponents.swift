@@ -91,8 +91,8 @@ struct LiveBadge: View {
     let isBuffering: Bool
     
     private var label: String {
-        if isBuffering { return "Sintonizando" }
-        return isPlaying ? "En vivo" : "En pausa"
+        if isBuffering { return "Tuning" }
+        return isPlaying ? "Live" : "Paused"
     }
     
     var body: some View {
@@ -133,7 +133,7 @@ struct RetroHeader: View {
             }
             .buttonStyle(.plain)
             .neumorphicRaised(Circle(), shadowRadius: 7)
-            .accessibilityLabel("Ajustes")
+            .accessibilityLabel("Settings")
             
             Spacer()
             
@@ -153,7 +153,7 @@ struct RetroHeader: View {
             }
             .buttonStyle(.plain)
             .neumorphicRaised(Circle(), fill: isLive ? Color.appAccent : Color.appCard, shadowRadius: 7)
-            .accessibilityLabel(isLive ? "Reproduciendo" : "Reproductor")
+            .accessibilityLabel(isLive ? "Now playing" : "Player")
         }
     }
 }
@@ -175,9 +175,9 @@ enum AppTab: CaseIterable {
     
     var title: String {
         switch self {
-        case .home: return "Inicio"
+        case .home: return "Home"
         case .radio: return "Radio"
-        case .favorites: return "Favoritos"
+        case .favorites: return "Favorites"
         }
     }
 }

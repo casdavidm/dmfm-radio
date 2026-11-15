@@ -41,7 +41,7 @@ struct FullPlayerSheetView: View {
                         }
                         .buttonStyle(.plain)
                         .neumorphicRaised(Circle(), shadowRadius: 7)
-                        .accessibilityLabel("Cerrar")
+                        .accessibilityLabel("Close")
                         
                         Spacer()
                         
@@ -64,7 +64,7 @@ struct FullPlayerSheetView: View {
                         }
                         .buttonStyle(.plain)
                         .neumorphicRaised(Circle(), shadowRadius: 7)
-                        .accessibilityLabel("Favorito")
+                        .accessibilityLabel("Favorite")
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, 20)
@@ -72,7 +72,7 @@ struct FullPlayerSheetView: View {
                     // MARK: - Ahora suena
                     VStack(spacing: 12) {
                         HStack {
-                            Text("AHORA SUENA")
+                            Text("NOW PLAYING")
                                 .font(.system(size: 10, weight: .semibold))
                                 .tracking(2)
                                 .foregroundColor(Color.appTextSecondary)
@@ -143,7 +143,7 @@ struct FullPlayerSheetView: View {
                     
                     // MARK: - Controles cuadrados
                     HStack(spacing: 20) {
-                        squareButton(icon: "backward.fill", width: 62, action: onPrevious, label: "Emisora anterior")
+                        squareButton(icon: "backward.fill", width: 62, action: onPrevious, label: "Previous station")
                             .disabled(!skipEnabled)
                             .opacity(skipEnabled ? 1 : 0.45)
                         
@@ -166,9 +166,9 @@ struct FullPlayerSheetView: View {
                         }
                         .buttonStyle(.plain)
                         .neumorphicRaised(RoundedRectangle(cornerRadius: 20, style: .continuous), fill: Color.appAccent, shadowRadius: 10)
-                        .accessibilityLabel(player.state.isPlaying ? "Pausar" : "Reproducir")
+                        .accessibilityLabel(player.state.isPlaying ? "Pause" : "Play")
                         
-                        squareButton(icon: "forward.fill", width: 62, action: onNext, label: "Emisora siguiente")
+                        squareButton(icon: "forward.fill", width: 62, action: onNext, label: "Next station")
                             .disabled(!skipEnabled)
                             .opacity(skipEnabled ? 1 : 0.45)
                     }

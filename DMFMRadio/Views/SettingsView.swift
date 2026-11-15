@@ -9,7 +9,7 @@ final class SettingsViewModel: ObservableObject {
     func apply(player: RadioPlayer, onDismiss: () -> Void) {
         let trimmed = customURL.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let url = URL(string: trimmed), url.scheme == "http" || url.scheme == "https" else {
-            alertMessage = "Introduce una URL válida que empiece con https:// o http://"
+            alertMessage = "Enter a valid URL starting with https:// or http://"
             showAlert = true
             return
         }
@@ -40,11 +40,11 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .neumorphicRaised(Circle(), shadowRadius: 7)
-                    .accessibilityLabel("Cerrar")
+                    .accessibilityLabel("Close")
                     
                     Spacer()
                     
-                    Text("AJUSTES")
+                    Text("SETTINGS")
                         .font(.system(size: 12, weight: .semibold))
                         .tracking(3)
                         .foregroundColor(Color.appTextPrimary)
@@ -60,12 +60,12 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         // MARK: - Stream personalizado
                         VStack(alignment: .leading, spacing: 14) {
-                            Text("STREAM PERSONALIZADO")
+                            Text("CUSTOM STREAM")
                                 .font(.system(size: 11, weight: .semibold))
                                 .tracking(2)
                                 .foregroundColor(Color.appAccent)
                             
-                            Text("Introduce la URL de tu transmisión en vivo (Icecast, Shoutcast, HLS o MP3):")
+                            Text("Enter your live stream URL (Icecast, Shoutcast, HLS or MP3):")
                                 .font(.system(size: 13))
                                 .foregroundColor(Color.appTextSecondary)
                             
@@ -74,7 +74,7 @@ struct SettingsView: View {
                                     .font(.system(size: 14, weight: .semibold))
                                     .foregroundColor(Color.appTextSecondary)
                                 
-                                TextField("https://tu-radio-stream.com/live", text: $model.customURL)
+                                TextField("https://your-radio-stream.com/live", text: $model.customURL)
                                     .keyboardType(.URL)
                                     .textInputAutocapitalization(.never)
                                     .autocorrectionDisabled()
@@ -92,7 +92,7 @@ struct SettingsView: View {
                             }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "antenna.radiowaves.left.and.right")
-                                    Text("Conectar y reproducir")
+                                    Text("Connect and play")
                                 }
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundColor(Color.appBackground)
@@ -107,7 +107,7 @@ struct SettingsView: View {
                         
                         // MARK: - Acerca de
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("ACERCA DE")
+                            Text("ABOUT")
                                 .font(.system(size: 11, weight: .semibold))
                                 .tracking(2)
                                 .foregroundColor(Color.appAccent)
@@ -133,7 +133,7 @@ struct SettingsView: View {
         .preferredColorScheme(.dark)
         .alert(isPresented: $model.showAlert) {
             Alert(
-                title: Text("Aviso"),
+                title: Text("Notice"),
                 message: Text(model.alertMessage),
                 dismissButton: .default(Text("OK"))
             )

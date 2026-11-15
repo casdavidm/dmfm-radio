@@ -74,7 +74,7 @@ struct StationCardView: View {
                     .frame(width: 36, height: 36)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(isFavorite ? "Quitar de favoritos" : "Añadir a favoritos")
+            .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
             
             // MARK: - Play / Pausa
             Button(action: onPlayTapped) {
@@ -94,7 +94,7 @@ struct StationCardView: View {
             }
             .buttonStyle(.plain)
             .neumorphicRaised(Circle(), fill: isSelected && isPlaying ? Color.appAccent : Color.appCard, shadowRadius: 6)
-            .accessibilityLabel(isSelected && isPlaying ? "Pausar" : "Reproducir")
+            .accessibilityLabel(isSelected && isPlaying ? "Pause" : "Play")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)

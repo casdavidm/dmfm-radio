@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-/// Estados del servicio de Radio Browser
+/// States of the Radio Browser service
 enum RadioBrowserState: Equatable {
     case idle
     case loading
@@ -14,34 +14,33 @@ enum RadioBrowserState: Equatable {
     }
 }
 
-/// Filtros rápidos por país y categorías
-enum CountryFilter: String, CaseIterable, Identifiable {
-    case topWorld = "Top Mundial"
-    case spain = "España"
-    case mexico = "México"
-    case colombia = "Colombia"
-    case argentina = "Argentina"
-    case favorites = "Favoritos"
+/// A group of stations that share a country, built dynamically from the catalog.
+/// Stations with a missing or unrecognized country fall into the "World" group.
+struct CountryGroup: Identifiable, Hashable {
+    static let allID = "ALL"
+    static let worldID = "WORLD"
     
-    var id: String { rawValue }
+    let id: String
+    let name: String
+    let stations: [RadioStation]
     
-    var countryCode: String? {
-        switch self {
-        case .topWorld, .favorites:
-            return nil
-        case .spain:
-            return "ES"
-        case .mexico:
-            return "MX"
-        case .colombia:
-            return "CO"
-        case .argentina:
-            return "AR"
+    var isAll: Bool { id == CountryGroup.allID }
+    var isWorld: Bool { id == CountryGroup.worldID }
+    
+    /// Flag emoji derived from the ISO country code; globe for All and World
+    var flag: String {
+        guard !isAll, !isWorld, id.count == 2 else { return "🌍" }
+        let base: UInt32 = 127397
+        var flag = ""
+        for scalar in id.uppercased().unicodeScalars {
+            guard let unicode = UnicodeScalar(base + scalar.value) else { return "🌍" }
+            flag.unicodeScalars.append(unicode)
         }
+        return flag
     }
 }
 
-/// DTO para la respuesta de la API pública de Radio Browser
+/// DTO for the public Radio Browser API response
 private struct RadioBrowserStationDTO: Decodable {
     let stationuuid: String
     let name: String
@@ -57,121 +56,221 @@ private struct RadioBrowserStationDTO: Decodable {
     let votes: Int?
 }
 
-/// Servicio que interactúa con la API pública de Radio Browser
+/// Service that talks to the public Radio Browser API.
+///
+/// - Loads a worldwide catalog once and groups it by country on the fly.
+/// - The search bar always queries the whole worldwide catalog, ignoring the selected group.
 @MainActor
 final class RadioBrowserService: ObservableObject {
     static let shared = RadioBrowserService()
     
     // MARK: - Published Properties
+    
+    /// Stations currently shown in the list (selected group, or worldwide search results)
     @Published private(set) var state: RadioBrowserState = .idle
+    /// Country groups derived from the catalog, most populated first, "World" last
+    @Published private(set) var groups: [CountryGroup] = []
     @Published var searchText: String = ""
-    @Published var selectedFilter: CountryFilter = .topWorld {
+    @Published var selectedGroupID: String = CountryGroup.allID {
         didSet {
-            if selectedFilter != oldValue {
-                loadCurrentSelection()
+            if selectedGroupID != oldValue && !isSearching {
+                showSelectedGroup()
             }
         }
     }
     
+    var selectedGroup: CountryGroup? {
+        groups.first { $0.id == selectedGroupID }
+    }
+    
+    /// True while the list shows worldwide search results instead of a country group
+    var isSearching: Bool {
+        !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    
     // MARK: - Private Properties
-    private var currentTask: Task<Void, Never>?
+    
+    private var catalog: [RadioStation] = []
+    private var catalogTask: Task<Void, Never>?
+    private var searchTask: Task<Void, Never>?
     private var searchDebounceCancellable: AnyCancellable?
     private let primaryBaseURL = "https://de1.api.radio-browser.info/json/stations/search"
     private let fallbackBaseURL = "https://at1.api.radio-browser.info/json/stations/search"
+    private let catalogLimit = 600
+    private let searchLimit = 120
     
     private init() {
         setupSearchDebounce()
         loadCurrentSelection()
     }
     
-    // MARK: - Debounce Search
+    // MARK: - Debounced Search
+    
     private func setupSearchDebounce() {
         searchDebounceCancellable = $searchText
             .dropFirst()
-            .debounce(for: .milliseconds(400), scheduler: DispatchQueue.main)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .removeDuplicates()
+            .debounce(for: .milliseconds(400), scheduler: DispatchQueue.main)
             .sink { [weak self] query in
-                self?.loadCurrentSelection()
-            }
-    }
-    
-    // MARK: - Public Fetch Methods
-    
-    /// Carga las emisoras según el filtro actual y el texto de búsqueda
-    func loadCurrentSelection() {
-        currentTask?.cancel()
-        
-        // Si el filtro seleccionado es Favoritos, cargar desde FavoritesManager
-        if selectedFilter == .favorites {
-            let favs = FavoritesManager.shared.favoriteStations
-            let filteredFavs: [RadioStation]
-            let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-            if trimmed.isEmpty {
-                filteredFavs = favs
-            } else {
-                filteredFavs = favs.filter {
-                    $0.name.lowercased().contains(trimmed) ||
-                    $0.genre.lowercased().contains(trimmed) ||
-                    $0.country.lowercased().contains(trimmed)
+                guard let self = self else { return }
+                if query.isEmpty {
+                    self.searchTask?.cancel()
+                    self.showSelectedGroup()
+                } else {
+                    self.searchWorldwide(query)
                 }
             }
-            self.state = .loaded(filteredFavs)
-            return
-        }
-        
-        let filter = selectedFilter
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        currentTask = Task { [weak self] in
-            await self?.performSearch(filter: filter, query: query)
+    }
+    
+    // MARK: - Public API
+    
+    /// Reloads the catalog (or re-runs the active search) and refreshes the list
+    func loadCurrentSelection() {
+        if isSearching {
+            searchWorldwide(searchText.trimmingCharacters(in: .whitespacesAndNewlines))
+        } else if catalog.isEmpty {
+            loadCatalog()
+        } else {
+            showSelectedGroup()
         }
     }
     
-    /// Realiza la petición a Radio Browser API
-    private func performSearch(filter: CountryFilter, query: String) async {
-        self.state = .loading
+    // MARK: - Catalog & Grouping
+    
+    private func loadCatalog() {
+        catalogTask?.cancel()
+        state = .loading
         
-        var queryItems: [URLQueryItem] = [
+        let queryItems = [
             URLQueryItem(name: "hidebroken", value: "true"),
             URLQueryItem(name: "order", value: "votes"),
             URLQueryItem(name: "reverse", value: "true"),
-            URLQueryItem(name: "limit", value: "70")
+            URLQueryItem(name: "limit", value: "\(catalogLimit)")
         ]
         
-        if let countryCode = filter.countryCode {
-            queryItems.append(URLQueryItem(name: "countrycode", value: countryCode))
-        }
-        
-        if !query.isEmpty {
-            queryItems.append(URLQueryItem(name: "name", value: query))
-        }
-        
-        do {
-            let stations = try await executeRequest(baseURL: primaryBaseURL, queryItems: queryItems)
-            if Task.isCancelled { return }
-            self.state = .loaded(stations)
-        } catch {
-            if Task.isCancelled { return }
-            // Intentar con servidor de respaldo
+        catalogTask = Task { [weak self] in
+            guard let self = self else { return }
             do {
-                let stations = try await executeRequest(baseURL: fallbackBaseURL, queryItems: queryItems)
+                let stations = try await self.fetchWithFallback(queryItems: queryItems)
                 if Task.isCancelled { return }
-                self.state = .loaded(stations)
+                self.catalog = stations
+                self.groups = self.buildGroups(from: stations)
+                if !self.groups.contains(where: { $0.id == self.selectedGroupID }) {
+                    self.selectedGroupID = CountryGroup.allID
+                }
+                if !self.isSearching {
+                    self.showSelectedGroup()
+                }
             } catch {
                 if Task.isCancelled { return }
-                print("Error consultando Radio Browser: \(error.localizedDescription)")
-                // Si falla la red, proveer las emisoras por defecto como respaldo
-                let fallbackStations = AppConfig.defaultStations
-                if !fallbackStations.isEmpty {
-                    self.state = .loaded(fallbackStations)
-                } else {
-                    self.state = .error("No se pudo conectar con la base de datos de emisoras. Revisa tu conexión a internet.")
-                }
+                self.state = .error("Could not reach the station directory. Check your internet connection.")
             }
         }
     }
     
-    /// Ejecuta la petición HTTP y filtra únicamente streams https:// funcionales
+    /// Groups stations by country. Missing or unrecognized countries go to "World".
+    private func buildGroups(from stations: [RadioStation]) -> [CountryGroup] {
+        var byCountry: [String: (name: String, stations: [RadioStation])] = [:]
+        var world: [RadioStation] = []
+        
+        for station in stations {
+            let code = station.countryCode.uppercased()
+            let name = station.country
+            let isRecognized = code.count == 2 && code.allSatisfy { $0.isLetter } && !name.isEmpty
+            
+            if isRecognized {
+                byCountry[code, default: (name: name, stations: [])].stations.append(station)
+            } else {
+                world.append(station)
+            }
+        }
+        
+        var result: [CountryGroup] = [CountryGroup(id: CountryGroup.allID, name: "All", stations: stations)]
+        
+        let countries = byCountry
+            .map { CountryGroup(id: $0.key, name: $0.value.name, stations: $0.value.stations) }
+            .sorted {
+                if $0.stations.count != $1.stations.count { return $0.stations.count > $1.stations.count }
+                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+        result.append(contentsOf: countries)
+        
+        if !world.isEmpty {
+            result.append(CountryGroup(id: CountryGroup.worldID, name: "World", stations: world))
+        }
+        return result
+    }
+    
+    private func showSelectedGroup() {
+        guard !catalog.isEmpty else {
+            loadCatalog()
+            return
+        }
+        state = .loaded(selectedGroup?.stations ?? catalog)
+    }
+    
+    // MARK: - Worldwide Search
+    
+    /// Searches the entire worldwide directory by station name, ignoring the selected group
+    private func searchWorldwide(_ query: String) {
+        searchTask?.cancel()
+        state = .loading
+        
+        let queryItems = [
+            URLQueryItem(name: "hidebroken", value: "true"),
+            URLQueryItem(name: "order", value: "votes"),
+            URLQueryItem(name: "reverse", value: "true"),
+            URLQueryItem(name: "limit", value: "\(searchLimit)"),
+            URLQueryItem(name: "name", value: query)
+        ]
+        
+        searchTask = Task { [weak self] in
+            guard let self = self else { return }
+            do {
+                var results = try await self.fetchWithFallback(queryItems: queryItems)
+                if Task.isCancelled { return }
+                
+                // Also match genre tags and countries from the loaded catalog
+                let lowered = query.lowercased()
+                let seen = Set(results.map(\.id))
+                let localMatches = self.catalog.filter {
+                    !seen.contains($0.id) &&
+                    ($0.name.lowercased().contains(lowered) ||
+                     $0.genre.lowercased().contains(lowered) ||
+                     $0.country.lowercased().contains(lowered))
+                }
+                results.append(contentsOf: localMatches)
+                self.state = .loaded(results)
+            } catch {
+                if Task.isCancelled { return }
+                self.state = .error("Could not reach the station directory. Check your internet connection.")
+            }
+        }
+    }
+    
+    // MARK: - Country names
+    
+    private static let englishLocale = Locale(identifier: "en_US")
+    
+    /// English display name for a two-letter ISO country code, nil if unrecognized
+    static func englishCountryName(code: String) -> String? {
+        guard code.count == 2, code.allSatisfy({ $0.isLetter }) else { return nil }
+        return englishLocale.localizedString(forRegionCode: code)
+    }
+    
+    // MARK: - Networking
+    
+    private func fetchWithFallback(queryItems: [URLQueryItem]) async throws -> [RadioStation] {
+        do {
+            return try await executeRequest(baseURL: primaryBaseURL, queryItems: queryItems)
+        } catch {
+            if Task.isCancelled { throw error }
+            return try await executeRequest(baseURL: fallbackBaseURL, queryItems: queryItems)
+        }
+    }
+    
+    /// Runs the HTTP request and keeps only working https:// streams
     private func executeRequest(baseURL: String, queryItems: [URLQueryItem]) async throws -> [RadioStation] {
         guard var components = URLComponents(string: baseURL) else {
             throw URLError(.badURL)
@@ -183,7 +282,7 @@ final class RadioBrowserService: ObservableObject {
         }
         
         var request = URLRequest(url: url)
-        request.timeoutInterval = 12
+        request.timeoutInterval = 15
         request.setValue("DMFMRadio/1.0 (iOS; SwiftUI)", forHTTPHeaderField: "User-Agent")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -194,9 +293,7 @@ final class RadioBrowserService: ObservableObject {
         
         let dtos = try JSONDecoder().decode([RadioBrowserStationDTO].self, from: data)
         
-        // Filtrar únicamente streams con https:// y con bitrate funcional para evitar bloqueos en iOS
-        let filteredStations: [RadioStation] = dtos.compactMap { dto in
-            // Obtener URL de stream (preferir url_resolved si existe y no está vacía)
+        return dtos.compactMap { dto in
             let rawURL: String
             if let resolved = dto.url_resolved, !resolved.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 rawURL = resolved.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -204,28 +301,21 @@ final class RadioBrowserService: ObservableObject {
                 rawURL = dto.url.trimmingCharacters(in: .whitespacesAndNewlines)
             }
             
-            // Requisito estricto: Solo streams https://
-            guard rawURL.lowercased().hasPrefix("https://") else {
-                return nil
-            }
+            // Strict requirement: https:// streams only
+            guard rawURL.lowercased().hasPrefix("https://") else { return nil }
             
             let name = dto.name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty else { return nil }
             
-            let country = (dto.country ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            let countryCode = (dto.countrycode ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let rawCountry = (dto.country ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let countryCode = (dto.countrycode ?? "").trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+            // Standard English country name from the ISO code ("United States" instead of "The United States Of America")
+            let country = RadioBrowserService.englishCountryName(code: countryCode) ?? rawCountry
             let codec = (dto.codec ?? "MP3").trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
             let bitrateInt = dto.bitrate ?? 0
             
-            // Tag de bitrate / calidad
-            let bitrateString: String
-            if bitrateInt > 0 {
-                bitrateString = "\(bitrateInt) kbps • \(codec)"
-            } else {
-                bitrateString = "\(codec) • En Vivo"
-            }
+            let bitrateString = bitrateInt > 0 ? "\(bitrateInt) kbps • \(codec)" : "\(codec) • Live"
             
-            // Géneros / tags
             let tagsClean = (dto.tags ?? "")
                 .split(separator: ",")
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -233,12 +323,12 @@ final class RadioBrowserService: ObservableObject {
                 .prefix(2)
                 .joined(separator: " • ")
             
-            let genre = tagsClean.isEmpty ? (country.isEmpty ? "Radio Digital" : country) : tagsClean
+            let genre = tagsClean.isEmpty ? (country.isEmpty ? "Digital Radio" : country) : tagsClean
             
             return RadioStation(
                 id: dto.stationuuid,
                 name: name,
-                subtitle: country.isEmpty ? "Emisora Internacional" : country,
+                subtitle: country.isEmpty ? "World" : country,
                 streamURL: rawURL,
                 genre: genre,
                 bitrate: bitrateString,
@@ -248,7 +338,5 @@ final class RadioBrowserService: ObservableObject {
                 faviconURL: dto.favicon
             )
         }
-        
-        return filteredStations
     }
 }

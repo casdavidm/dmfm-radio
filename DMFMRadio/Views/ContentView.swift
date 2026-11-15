@@ -75,6 +75,7 @@ struct ContentView: View {
             }
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.85), value: selectedTab)
+        .animation(.easeInOut(duration: 0.2), value: browserService.isSearching)
         .animation(.easeInOut(duration: 0.25), value: player.currentStation.isPlaceholder)
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showingNowPlaying) {
@@ -132,7 +133,7 @@ struct ContentView: View {
         let stream = queryItems.first(where: { $0.name == "stream" })?.value
         let name = queryItems.first(where: { $0.name == "name" })?.value ?? "DM/FM Radio"
         let subtitle = queryItems.first(where: { $0.name == "subtitle" })?.value ?? ""
-        let genre = queryItems.first(where: { $0.name == "genre" })?.value ?? "En vivo"
+        let genre = queryItems.first(where: { $0.name == "genre" })?.value ?? "Live"
         let bitrate = queryItems.first(where: { $0.name == "bitrate" })?.value ?? "128 kbps"
         let country = queryItems.first(where: { $0.name == "country" })?.value ?? ""
         let countryCode = queryItems.first(where: { $0.name == "countryCode" })?.value ?? ""
@@ -172,7 +173,21 @@ struct ContentView: View {
         VStack(spacing: 0) {
             searchBarView
                 .padding(.horizontal, 20)
-                .padding(.bottom, 14)
+                .padding(.bottom, browserService.isSearching ? 6 : 14)
+            
+            if browserService.isSearching {
+                HStack(spacing: 6) {
+                    Image(systemName: "globe")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("Searching the worldwide catalog")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.5)
+                }
+                .foregroundColor(Color.appAccent)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 28)
+                .padding(.bottom, 6)
+            }
             
             filterChipsView
                 .padding(.bottom, 6)
@@ -188,7 +203,7 @@ struct ContentView: View {
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(browserService.searchText.isEmpty ? Color.appTextSecondary : Color.appAccent)
             
-            TextField("Buscar emisora o género…", text: $browserService.searchText)
+            TextField("Search stations or genres…", text: $browserService.searchText)
                 .font(.system(size: 14))
                 .foregroundColor(Color.appTextPrimary)
                 .tint(Color.appAccent)
@@ -202,7 +217,7 @@ struct ContentView: View {
                         .foregroundColor(Color.appTextSecondary)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Borrar búsqueda")
+                .accessibilityLabel("Clear search")
             }
         }
         .padding(.horizontal, 16)
@@ -210,29 +225,57 @@ struct ContentView: View {
         .neumorphicInset(Capsule())
     }
     
-    /// Chips de filtro rápido (Favoritos vive en su propia pestaña)
+    /// Country chips built dynamically from the catalog ("All" first, "World" last).
+    /// While searching, the search covers the whole catalog and the chips are dimmed.
     private var filterChipsView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
-                ForEach(CountryFilter.allCases.filter { $0 != .favorites }) { filter in
-                    let isSelected = browserService.selectedFilter == filter
-                    
-                    Button(action: {
-                        hapticTap()
-                        browserService.selectedFilter = filter
-                    }) {
-                        Text(filter.rawValue)
-                            .font(.system(size: 13, weight: isSelected ? .bold : .medium))
-                            .foregroundColor(isSelected ? Color.appBackground : Color.appTextSecondary)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 9)
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    if browserService.groups.isEmpty {
+                        ForEach(0..<4, id: \.self) { _ in
+                            Capsule()
+                                .fill(Color.appCard)
+                                .frame(width: 92, height: 36)
+                        }
+                    } else {
+                        ForEach(browserService.groups) { group in
+                            let isSelected = browserService.selectedGroupID == group.id && !browserService.isSearching
+                            
+                            Button(action: {
+                                hapticTap()
+                                if browserService.isSearching {
+                                    browserService.searchText = ""
+                                }
+                                browserService.selectedGroupID = group.id
+                            }) {
+                                HStack(spacing: 6) {
+                                    Text(group.flag)
+                                        .font(.system(size: 13))
+                                    Text(group.name)
+                                        .font(.system(size: 13, weight: isSelected ? .bold : .medium))
+                                    if !group.isAll {
+                                        Text("\(group.stations.count)")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundColor(isSelected ? Color.appBackground.opacity(0.7) : Color.appTextSecondary.opacity(0.7))
+                                    }
+                                }
+                                .foregroundColor(isSelected ? Color.appBackground : Color.appTextSecondary)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 9)
+                            }
+                            .buttonStyle(.plain)
+                            .neumorphicRaised(Capsule(), fill: isSelected ? Color.appAccent : Color.appCard, shadowRadius: 6)
+                            .id(group.id)
+                        }
                     }
-                    .buttonStyle(.plain)
-                    .neumorphicRaised(Capsule(), fill: isSelected ? Color.appAccent : Color.appCard, shadowRadius: 6)
                 }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
+                .opacity(browserService.isSearching ? 0.55 : 1)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 8)
+            .onChange(of: browserService.selectedGroupID) { newValue in
+                withAnimation { proxy.scrollTo(newValue, anchor: .center) }
+            }
         }
     }
     
@@ -247,7 +290,7 @@ struct ContentView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: Color.appAccent))
                             .scaleEffect(1.2)
                         
-                        Text("Sintonizando emisoras mundiales…")
+                        Text("Tuning worldwide stations…")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(Color.appTextSecondary)
                     }
@@ -267,7 +310,7 @@ struct ContentView: View {
                             .padding(.horizontal, 24)
                         
                         Button(action: { browserService.loadCurrentSelection() }) {
-                            Text("Reintentar")
+                            Text("Retry")
                                 .font(.system(size: 13, weight: .bold))
                                 .foregroundColor(Color.appBackground)
                                 .padding(.horizontal, 20)
@@ -282,8 +325,10 @@ struct ContentView: View {
                     if stations.isEmpty {
                         emptyStateView(
                             icon: "antenna.radiowaves.left.and.right.slash",
-                            title: "No se encontraron emisoras con streams HTTPS activos.",
-                            hint: nil
+                            title: browserService.isSearching
+                                ? "No stations match your search."
+                                : "No stations with active HTTPS streams were found.",
+                            hint: browserService.isSearching ? "Search covers the whole worldwide catalog." : nil
                         )
                     } else {
                         ForEach(stations) { station in
@@ -309,7 +354,7 @@ struct ContentView: View {
         ScrollView {
             LazyVStack(spacing: 14) {
                 HStack {
-                    Text("TUS EMISORAS")
+                    Text("YOUR STATIONS")
                         .font(.system(size: 11, weight: .semibold))
                         .tracking(2)
                         .foregroundColor(Color.appTextSecondary)
@@ -326,8 +371,8 @@ struct ContentView: View {
                 if favoritesManager.favoriteStations.isEmpty {
                     emptyStateView(
                         icon: "star.slash",
-                        title: "No tienes emisoras favoritas guardadas.",
-                        hint: "Toca la estrella en cualquier emisora para agregarla aquí."
+                        title: "You haven't saved any favorite stations yet.",
+                        hint: "Tap the star on any station to add it here."
                     )
                 } else {
                     ForEach(favoritesManager.favoriteStations) { station in
